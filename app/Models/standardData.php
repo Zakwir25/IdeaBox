@@ -10,6 +10,6 @@ class standardData extends Model
     protected $table = 'standard_datas';
     use HasFactory;
     protected $fillable = [
-        'name','value'
+        'name','value','year'
     ];
 }

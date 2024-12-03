@@ -46,7 +46,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/filter', [Dashboard::class, 'getLeaderboardData']);
     
     Route::get('/chartfilter', [Dashboard::class, 'getBarChart']);
-
+    Route::get('/filterTarget', [Dashboard::class, 'getTargetData']);
+    Route::get('/targets', [Dashboard::class, 'targetIndex'])->name('targets.index');
+    Route::delete('/targets/{id}/delete', [Dashboard::class, 'targetDestroy'])->name('targets.destroy');
+    Route::PUT('/targets/{id}/update', [Dashboard::class, 'targetUpdate'])->name('targets.update');
+    Route::POST('/targets/store', [Dashboard::class, 'targetStore'])->name('targets.store');
+    
     
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

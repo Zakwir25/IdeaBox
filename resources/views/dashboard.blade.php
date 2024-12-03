@@ -129,25 +129,35 @@
 
     <!-- Summary -->
     <div class="row">
-    @foreach($dataPercentages as $index => $data)
-        <div class="col-lg-3 col-md-12">
-            <div class="card mb-4 shadow">
-                <div class="card-body">
-                    <h4 class="card-title text-primary">{{$data['name']}}</h4>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p>Target Elimination Ideas: {{$data['standard']}}</p>
-                            <p>Implemented: {{$data['actual']}}</p>
-                            <p>Success Rate: {{$data['percentage']}}%</p>
-                        </div>
-                        <div class="text-right text-lg">
-                            <span class="badge {{ $data['name'] == 'AI Implementation' ? 'bg-success' : ( $data['name'] == 'Best Practice Implementation' ? 'bg-info' : ( $data['name'] == 'Improvement Implementation' ? 'bg-warning' : 'bg-danger')) }} text-lg" >{{$data['percentage']}}%</span>
+        <div class="d-flex justify-content-between align-items-center">
+            <select id="year-target" class="form-select filter-select w-auto" aria-label="Filter by Year">
+            <option value="" selected>Select year</option>
+            @foreach($years as $year)
+                <option value="{{ $year }}">{{ \Carbon\Carbon::create()->year($year)->format('Y') }}</option>
+            @endforeach
+            </select>
+        </div>
+        <div id="targetDiv" class="row m-0 p-0">
+            @foreach($dataPercentages as $data)
+            <div class="col-lg-3 col-md-12">
+                <div class="card mb-4 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title text-primary">{{$data['name']}}</h4>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p>Target Elimination Ideas: {{$data['standard']}}</p>
+                                <p>Implemented: {{$data['actual']}}</p>
+                                <p>Success Rate: {{$data['percentage']}}%</p>
+                            </div>
+                            <div class="text-right text-lg">
+                                <span class="badge {{ $data['name'] == 'AI Implementation' ? 'bg-success' : ( $data['name'] == 'Best Practice Implementation' ? 'bg-info' : ( $data['name'] == 'Improvement Implementation' ? 'bg-warning' : 'bg-danger')) }} text-lg" > {{$data['percentage']}}%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            @endforeach
         </div>
-        @endforeach
     </div>
 
     <!-- Main Content -->
@@ -761,6 +771,8 @@
             document.getElementById('year-AI').addEventListener('change', getAILeaderboardData);
             document.getElementById('month-AI').addEventListener('change', getAILeaderboardData);
 
+            document.getElementById('year-target').addEventListener('change', getTargetData);
+
             function getNovAALeaderboardData(){
 
                 const yearSelect = document.getElementById('year-novaa').value;
@@ -891,6 +903,50 @@
                 
             }
 
+
+            function getTargetData(){
+                
+                const yearSelect = document.getElementById('year-target').value;
+                fetch(`/filterTarget?year=${yearSelect}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if(data){
+                                    const targetDiv = document.getElementById("targetDiv");
+                                    console.log("Target Data: ", data);
+                                    targetDiv.innerHTML = "";
+
+                                    data.forEach((item, index) => {
+                                        console.log(item);
+                                        targetDiv.innerHTML += `
+                                            <div class="col-lg-3 col-md-12">
+                                                <div class="card mb-4 shadow">
+                                                    <div class="card-body">
+                                                        <h4 class="card-title text-primary">${item.name}</h4>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <p>Target Elimination Ideas: ${item.standard}</p>
+                                                                <p>Implemented: ${item.actual}</p>
+                                                                <p>Success Rate: ${item.percentage}%</p>
+                                                            </div>
+                                                            <div class="text-right text-lg">
+                                                                <span class="badge ${ item.name == 'AI Implementation' ? 'bg-success' : ( item.name == 'Best Practice Implementation' ? 'bg-info' : ( item.name == 'Improvement Implementation' ? 'bg-warning' : 'bg-danger')) } text-lg" > ${item.percentage}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    });
+                                }
+                                
+                            })
+                            .catch(error => console.error('Error fetching data:', error));
+            }
         </script>
     @endpush
 

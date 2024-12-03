@@ -101,14 +101,15 @@ class Dashboard extends Controller
         $ideaCounts = $results->pluck('idea_count');
         $departmentNames = $results->pluck('department_name');
 
+        // Hitung Target Data
         $standardData = standardData::select('name','value')
         ->get();
-
+        
         $actualData = DB::table('ideas')
         ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
         ->select('categories.name as name',DB::raw('count(ideas.id) as idea_count'))
         ->whereNotNull('name')
-        ->groupBy('name')
+        ->groupBy('name',)
         ->get();
 
         $dataPercentages = [];
@@ -122,10 +123,11 @@ class Dashboard extends Controller
                 'name' => $standard->name,
                 'actual' => $actualValue,
                 'standard' => $standard->value,
-                'percentage' => $percentage,
+                'percentage' => number_format($percentage, 0),
             ];
         }
 
+        // Hitung Data Effectiveness
         $countUsers = DB::table('departments')
         ->leftJoin('users', 'users.department_id', '=', 'departments.id')
         ->select('departments.name as name', DB::raw('count(users.id) as count_user'))
@@ -305,5 +307,84 @@ class Dashboard extends Controller
         return response()->json($data);
     }
 
+    public function getTargetData(Request $request){
+        
+        $year = $request->query('year');
+
+        $standardData = standardData::select('name','value');
+        if($year){
+            $standardData->where('year', $year);
+        }
+        $standardData = $standardData->get();
+
+        $actualData = DB::table('ideas')
+        ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
+        ->select('categories.name as name',DB::raw('count(ideas.id) as idea_count'), 'ideas.created_at as created_at')
+        ->whereNotNull('name');
+        if($year){
+            $actualData->whereYear('ideas.created_at', $year)->groupBy('name', 'created_at');
+        }else{
+            $actualData->groupBy('name');
+        }
+        $actualData = $actualData->get();
+
+        $dataPercentages = [];
+        foreach ($standardData as $index => $standard) {
+            $actualValue = $actualData[$index]->idea_count;
+            
+            // Menghitung persentase
+            $percentage = number_format($actualValue != 0 ? ($actualValue / $standard->value) * 100 : 0, 0);
+
+            $dataPercentages[] = [
+                'name' => $standard->name,
+                'actual' => $actualValue,
+                'standard' => $standard->value,
+                'percentage' => number_format($percentage, 0),
+            ];
+        }
+        
+
+        return response()->json($dataPercentages);
+    }
     
+    public function targetIndex(){
+        $standardData = standardData::get();
+
+         // Dialog Sweet Alert
+         $title = 'Delete User!';
+         $text = "Are you sure you want to delete?";
+
+         confirmDelete($title, $text);
+         
+        return view('page.master.Target.index', ['standardData' => $standardData]);
+    }
+
+    public function targetDestroy($id){
+        $user = standardData::findOrFail($id);
+        $user->delete();
+
+        return redirect('/targets')->with('status','Target Delete Successfully');
+    }
+
+    public function targetUpdate(Request $request, $targetId){
+
+        $standardData = standardData::find($targetId);
+        $standardData->name = $request->input('name');
+        $standardData->value = $request->input('value');
+        $standardData->year = $request->input('year');
+        $standardData->save();
+        
+        return redirect('/targets')->with('status','Target Update Successfully');
+    }
+
+    public function targetStore(Request $request){
+
+        $standardData = standardData::Create([
+            'name' => $request->input('name'),
+            'value' => $request->input('value'),
+            'year' => $request->input('year')
+        ]);
+        
+        return redirect('/targets')->with('status','Target Created Successfully');
+    }
 }

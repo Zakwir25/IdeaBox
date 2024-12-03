@@ -104,6 +104,13 @@
                                 </a>
                             </li>
                         @endcan
+                        
+                        <li class="sidebar-item">
+                            <a href="{{ route('targets.index') }}" class="sidebar-link">
+                            <i class="ti ti-circle"></i>
+                            <span class="hide-menu">Target</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 @endcan
