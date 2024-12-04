@@ -41,13 +41,26 @@
             .delete-icon i {
                 color: red;
             }
+
+            
+            video {
+                position: fixed;
+                right: 0;
+                bottom: 0;
+                min-width: 100%;
+                min-height: 100%;
+                }
         </style>
     @endpush
     @section('title')
         Add Ideas
     @endsection
+    <video autoplay loop muted>
+            <source src="{{ asset('assets/Videobackground/Background.mp4') }}" type="video/mp4">        
+        </video>
+
     <div class="container-fluid font-weight-medium shadow-none position-relative overflow-hidden mb-7">
-        <div class="card-body px-0">
+        <div class="card card-body p-e my-1">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="font-weight-medium fs-14 mb-0">Add Ideas</h4>
@@ -288,6 +301,8 @@
                 var descriptionInput = document.getElementById('descriptionInput');
                 descriptionInput.value = quill.root.innerHTML; // Ambil HTML dari Quill
             });
+
+           
         </script>
     @endpush
 </x-app-layout>
