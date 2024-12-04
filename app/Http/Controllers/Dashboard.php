@@ -330,7 +330,7 @@ class Dashboard extends Controller
 
         $dataPercentages = [];
         foreach ($standardData as $index => $standard) {
-            $actualValue = $actualData[$index]->idea_count;
+            $actualValue = $actualData->firstWhere('name', $standard->name)->idea_count;
             
             // Menghitung persentase
             $percentage = number_format($actualValue != 0 ? ($actualValue / $standard->value) * 100 : 0, 0);
