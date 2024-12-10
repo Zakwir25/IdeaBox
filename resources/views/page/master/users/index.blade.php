@@ -43,7 +43,7 @@
 
         <div class="card card-body">
             <div class="table-responsive">
-                <table class="table search-table align-middle text-nowrap" id="userTable">
+                <table class="table align-middle text-nowrap" id="userTable">
                     <thead class="header-item">
                         <th>No</th>
                         <th>Name</th>
@@ -63,11 +63,9 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         @if ($user->avatar)
-                                            <img src="{{ asset('assets/images/profile/' . $user->avatar) }}"
-                                                alt="avatar" class="rounded-circle" width="35">
+                                            <img src="{{ asset('storage/uploads/user_avatars/' . $user->avatar) }}" alt="Avatar" class="profile-pic rounded-circle" width="35">
                                         @else
-                                            <img src="{{ asset('assets/images/profile/user-8.jpg') }}" alt="avatar"
-                                                class="rounded-circle" width="35">
+                                            <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="Avatar" class="profile-pic rounded-circle" width="35">
                                         @endif
                                         <div class="ms-3">
                                             <div class="user-meta-info">

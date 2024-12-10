@@ -14,7 +14,7 @@ Login
                             <a href="{{ url('/') }}" class="text-nowrap logo-img d-flex align-items-center justify-content-center gap-2 mb-4 w-100">
                                 <b class="logo-icon">
                                     {{-- <img src="{{ asset('frontend/assets') }}/images/logo/logo.png" alt="homepage" class="dark-logo" style="width: 200px"> --}}
-                                    <img src="{{ asset('assets') }}/images/logos/Logo Cita-kedua.jpg" alt="homepage" class="dark-logo" style="width: 400px">
+                                    <img src="{{ asset('assets') }}/images/logos/Logo Cita-kedua.jpg" alt="homepage" class="dark-logo img-fluid" style="max-width: 100%; height: auto;">
                                 </b>
                             </a>
                             <form class="theme-form" method="POST" action="{{ route('login') }}">
@@ -43,9 +43,7 @@ Login
                                     <a class="text-primary fw-medium" href="{{ route('password.request') }}">Forgot Password?</a>
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100 py-8 mb-4">Sign In</button>
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <p class="fs-4 mb-0 fw-medium text-black">Go Home?</p>
-                                    <a class="text-primary fw-medium ms-2" href="/">Back Home</a>
+                                <div class="d-flex align-items-center justify-content-center"></div>
                                 </div>
                             </form>
                         </div>

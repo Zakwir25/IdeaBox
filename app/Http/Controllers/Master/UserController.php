@@ -9,6 +9,8 @@ use App\Models\Master\Section;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use RealRashid\SweetAlert\Facades\Alert;
 use Spatie\Permission\Models\Role;
 
@@ -128,5 +130,61 @@ class UserController extends Controller
         $user->delete();
 
         return redirect('/users')->with('status','User Delete Successfully');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255' . $request->user()->id,
+            'password' => 'nullable|string|min:8|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $user = $request->user();
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if it exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete('user_avatars/' . $user->avatar);
+            }
+
+            // Get original extension
+            $extension = $request->avatar->getClientOriginalExtension();
+
+            // Store new avatar with nik
+            $avatarName = $user->nik . '.' . $extension;
+
+            // Delete any existing avatar with the same name
+            if (Storage::disk('public')->exists('user_avatars/' . $avatarName)) {
+                Storage::disk('public')->delete('user_avatars/' . $avatarName);
+            }
+
+            $path = $request->avatar->storeAs('uploads/user_avatars', $avatarName, 'public');
+
+            // Log path for debugging
+            // Log::channel('custom')->info('Avatar stored at path: ' . $path);
+            // Log::channel('custom')->info('Storage directory contents:', Storage::disk('public')->allFiles('user_avatars'));
+
+            // Verify that file exists
+            if (!Storage::disk('public')->exists('user_avatars/' . $avatarName)) {
+                Log::error('Failed to store avatar: ' . $avatarName);
+            }
+
+            $user->avatar = $avatarName;
+        }
+
+        $user->save();
+
+        Alert::toast('Profile updated successfully!', 'success');
+        return redirect()->route('profile.edit');
     }
 }

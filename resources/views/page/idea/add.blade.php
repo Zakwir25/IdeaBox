@@ -1,9 +1,87 @@
 <x-app-layout>
     @push('css')
-        <link rel="stylesheet" href="{{ asset('assets/libs/select2/dist/css/select2.min.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/libs/quill/dist/quill.snow.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/libs/dropzone/dist/min/dropzone.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/libs/select2/dist/css/select2.min.css') }}">
+
         <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                /* Font modern */
+            }
+
+            .header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: lightblue;
+                padding: 10px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .header-container h4 {
+                margin: 0;
+                font-size: 18px;
+            }
+
+            .mascot-image {
+                width: 100px;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .mascot-image:hover {
+                transform: scale(1.05);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            }
+
+            .card {
+                border: none;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                margin-top: 20px;
+            }
+
+            .form-control {
+                border: 1px solid #007bff;
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+                transition: box-shadow 0.3s ease;
+            }
+
+            .form-control:focus,
+            .form-control:active {
+                border-color: #0056b3;
+                box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+            }
+
+            .btn-danger {
+                background-color: #ff4d4d;
+                border: none;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+            }
+
+            .btn-danger:hover {
+                background-color: #e60000;
+                transform: translateY(-2px);
+            }
+
+            .breadcrumb {
+                background-color: transparent;
+                padding: 0;
+                margin-bottom: 0;
+            }
+
+            .breadcrumb-item a {
+                text-decoration: none;
+            }
+
+            /* .breadcrumb-item.active {
+                color: #d1e7ff;
+            } */
+
+            /* Gaya untuk dropzone */
             .dropzone-style {
                 border: 2px dashed #007bff;
                 border-radius: 5px;
@@ -11,6 +89,11 @@
                 text-align: center;
                 cursor: pointer;
                 color: #007bff;
+                transition: background-color 0.3s ease;
+            }
+
+            .dropzone-style:hover {
+                background-color: #e9f5ff;
             }
 
             .image-wrapper {
@@ -18,6 +101,11 @@
                 width: 100px;
                 height: 100px;
                 overflow: hidden;
+                transition: transform 0.3s ease;
+            }
+
+            .image-wrapper:hover {
+                transform: scale(1.1);
             }
 
             .image-wrapper img {
@@ -36,44 +124,32 @@
                 font-size: 16px;
                 line-height: 1;
                 padding: 2px 5px;
+                transition: color 0.3s ease;
             }
 
-            .delete-icon i {
-                color: red;
+            .delete-icon:hover i {
+                color: darkred;
             }
-
-            
-            video {
-                position: fixed;
-                right: 0;
-                bottom: 0;
-                min-width: 100%;
-                min-height: 100%;
-                }
         </style>
     @endpush
     @section('title')
         Add Ideas
     @endsection
-    <video autoplay loop muted>
-            <source src="{{ asset('assets/Videobackground/Background.mp4') }}" type="video/mp4">        
-        </video>
-
     <div class="container-fluid font-weight-medium shadow-none position-relative overflow-hidden mb-7">
-        <div class="card card-body p-e my-1">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="card-body px-0">
+            <div class="header-container">
                 <div>
                     <h4 class="font-weight-medium fs-14 mb-0">Add Ideas</h4>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a class="text-muted text-decoration-none" href="">Home
-                                </a>
+                                <a href="">Home</a>
                             </li>
-                            <li class="breadcrumb-item text-muted" aria-current="page">Add Ideas</li>
+                            <li class="breadcrumb-item active" aria-current="page">Add Ideas</li>
                         </ol>
                     </nav>
                 </div>
+                <img src="{{ asset('assets') }}/images/logos/Maskot CITA.png" alt="homepage" class="mascot-image">
             </div>
         </div>
     </div>
@@ -81,11 +157,10 @@
     <!-- start Basic Area Chart -->
     <div class="container-fluid">
         <div class="row">
-            <div class="col-lg-12 ">
+            <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-7">
-                            <h4 class="card-title">Form Idea</h4>
 
                             <button class="navbar-toggler border-0 shadow-none d-md-none" type="button"
                                 data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
@@ -111,21 +186,20 @@
                                     <option value="4">AI Implementation</option>
                                 </select>
                             </div>
-
                             <!-- New Team Member Field -->
                             <div class="mb-4">
-                                <label class="form-label">Idea Team Member <span class="text-danger">*</span></label>
-                                <select name="members[]" class="select2 form-control"
-                                    multiple="multiple">
+                                <label class="form-label">Idea Team Member (Optional)</label>
+                                <select name="members[]" class="select2 form-control" multiple="multiple">
                                     @foreach ($users as $user)
                                         <option value="{{ $user->id }}">
                                             {{ $user->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <p class="fs-2">Please enter the name of the team member associated with this idea.</p>
-                            </div>
+                                <p class="fs-2">Please enter the name of the team member associated with this idea.
+                                </p>
 
+                            </div>
                             <div id="dynamicFields">
                                 <!-- Dynamic fields will be inserted here based on category -->
                             </div>
@@ -162,21 +236,21 @@
     <!-- end Basic Area Chart -->
 
     @push('scripts')
-        <script src="{{ asset('assets/libs/select2/dist/js/select2.full.min.js') }}"></script>
+        <script src="{{ asset('assets/libs/quill/dist/quill.min.js') }}"></script>
         <script src="{{ asset('assets/libs/select2/dist/js/select2.min.js') }}"></script>
         <script src="{{ asset('assets/libs/quill/dist/quill.min.js') }}"></script>
-        {{-- <script src="{{ asset('assets/js/forms/quill-init.js') }}"></script> --}}
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 $('.select2').select2({
-                    maximumSelectionLength: 5,  // Limit the number of selections to 5
+                    maximumSelectionLength: 5, // Limit the number of selections to 5
                     language: {
-                        maximumSelectionLength: function (args) {
-                        return "You can only select up to " + args.maximum + " options.";  // Custom message
-                       }
-                      }
+                        maximumSelectionLength: function(args) {
+                            return "You can only select up to " + args.maximum +
+                            " options."; // Custom message
+                        }
+                    }
                 });
-            });
+            });
             document.getElementById('categorySelect').addEventListener('change', function() {
                 const category = this.value;
                 const dynamicFields = document.getElementById('dynamicFields');
@@ -184,7 +258,7 @@
 
                 if (category === '1') {
                     dynamicFields.innerHTML = `
-                        <label class="form-label text-primary" style="word-wrap: break-all;">*Eliminasi kegiatan yang tidak memiliki nilai tambahan di Sinar Meadow (DOWNTIME: Defect, Overproduction, Waiting, Non-Utilized Talent, Transport, Inventory, Motion, Extra-Processing). Serta troubleshooting atas suatu masalah.*</label>
+                        <label class="form-label text-primary" style="word-wrap: break-all;">*Eliminasi kegiatan yang tidak memiliki nilai tambah di Sinar Meadow (DOWNTIME: Defect, Overproduction, Waiting, Non-Utilized Talent, Transport, Inventory, Motion, Extra-Processing). Serta troubleshooting atas suatu masalah.*</label>
                         <div class="mb-4">
                             <label class="form-label">Before</label>
                             <input type="text" class="form-control" name="before">
@@ -200,7 +274,7 @@
                     `;
                 } else if (category === '2') {
                     dynamicFields.innerHTML = `
-                        <label class="form-label text-primary" style="word-wrap: break-all;">*Penerapan inovasi di Sinar Meadow yang terinspirasi dari tempat lain yang sudah terbukti efektif & berdampak di tempat lain (Copycat/Copypride).*</label>
+                        <label class="form-label text-primary" style="word-wrap: break-all;">*Penerapan sesuatu yang terinspirasi dari tempat lain yang sudah terbukti efektif & berdampak di tempat lain (Copycat/Copypride).*</label>
                         <div class="mb-4">
                             <label class="form-label">Before</label>
                             <input type="text" class="form-control" name="before">
@@ -232,7 +306,7 @@
                     `;
                 } else if (category === '4') {
                     dynamicFields.innerHTML = `
-                        <label class="form-label text-primary" style="word-wrap: break-all;">*Pemanfaatan AI untuk improvement maupun problem solving pada pekerjaan di Sinar Meadow.*</label>
+                        <label class="form-label text-primary" style="word-wrap: break-all;">*Pemanfaatan AI untuk improvement maupun problem solving pada pekerjaan sehari-hari.*</label>
                         <div class="mb-4">
                             <label class="form-label">Before</label>
                             <input type="text" class="form-control" name="before">
@@ -301,8 +375,6 @@
                 var descriptionInput = document.getElementById('descriptionInput');
                 descriptionInput.value = quill.root.innerHTML; // Ambil HTML dari Quill
             });
-
-           
         </script>
     @endpush
 </x-app-layout>

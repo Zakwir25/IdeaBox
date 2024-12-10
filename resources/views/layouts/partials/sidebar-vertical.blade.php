@@ -9,8 +9,11 @@
                 style="background: url({{ asset('frontend/assets/images/logo/pic.jpg') }}) no-repeat; background-size: cover; width: 300px;">
                 <!-- User profile image -->
                 <div class="profile-img">
-                    <img src="{{ asset('assets') }}/images/profile/user-1.jpg" alt="user"
-                        class="w-100 rounded-circle overflow-hidden">
+                    @if (Auth::user()->avatar)
+                        <img src="{{ asset('storage/uploads/user_avatars/' . Auth::user()->avatar) }}" alt="user" class="w-100 rounded-circle overflow-hidden">
+                    @else
+                        <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="user" class="w-100 rounded-circle overflow-hidden">
+                    @endif
                 </div>
                 <!-- User profile text-->
                 <div class="profile-text hide-menu pt-1 dropdown">
@@ -68,7 +71,7 @@
                 <!-- Dashboard -->
                 <!-- ---------------------------------- -->
                 <li class="sidebar-item">
-                    <a class="sidebar-link" href="" id="get-url">
+                    <a class="sidebar-link" href="{{ route('dashboard') }}"id="get-url">
                         <iconify-icon icon="solar:screencast-2-linear" class="aside-icon"></iconify-icon>
                         <span class="hide-menu">Dashboard</span>
                     </a>
@@ -155,6 +158,23 @@
                     </a>
                 </li>
                 @endcan
+
+                @can('view target master')
+                <li class="sidebar-item">
+                    <a href="{{ route('targets.index') }}" class="sidebar-link">
+                        <i class="ti ti-circle"></i>
+                        <span class="hide-menu">Target</span>
+                    </a>
+                </li>
+                @endcan
+
+                
+                <li class="sidebar-item">
+                    <a href="{{ route('idea_counts.index') }}" class="sidebar-link">
+                        <i class="ti ti-circle"></i>
+                        <span class="hide-menu">Idea Count</span>
+                    </a>
+                </li>
                 <!-- ---------------------------------- -->
                 <!-- Idea Data  -->
                 <!-- ---------------------------------- -->

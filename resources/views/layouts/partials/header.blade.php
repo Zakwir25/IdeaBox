@@ -119,7 +119,7 @@
 
                                                         </div>
                                                     </a>
-                                                    <a href="http://simcost.sinarmeadow.com/" target="_blank"
+                                                    <a href="http://simcost.sinarmeadow.com:8000" target="_blank"
                                                         class="d-flex align-items-center pb-9 position-relative">
                                                         <div
                                                             class="bg-primary-subtle rounded-circle round-40 me-3 p-6 d-flex align-items-center justify-content-center">
@@ -194,29 +194,43 @@
                                 </div>
                             </a>
                             <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden"
-                                aria-labelledby="drop2">
+                                aria-labelledby="drop2" style="left:0;">
 
                                 <div class="py-3 px-4 bg-primary">
                                     <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
-                                    <div class="mb-0 fs-2 fw-medium text-white">You have {{ auth()->user()->unreadNotifications->count() ?? 0 }} Notifications</div>
+                                    <div class="mb-0 fs-2 fw-medium text-white">You have
+                                        {{ auth()->user()->unreadNotifications->count() ?? 0 }} Notifications</div>
                                 </div>
-                                 <div class="message-body" data-simplebar="">
+                                <div class="message-body notif" data-simplebar="">
                                     @foreach (auth()->user()->unreadNotifications as $notification)
-                                    <a href="javascript:void(0)"
-                                        class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                                        <span
-                                            class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
-                                            {{ substr(auth()->user()->where('id', $notification->data['user_id'])->first()->name, 0, 1) }}
-                                        </span>
-                                        <div class="w-80">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <h6 class="mb-1">{{ $notification->data['data']['title'] }}</h6>
-                                                <span class="fs-2 d-block text-muted ">{{ $notification->created_at->format('H:i') }}</span>
-                                            </div>
-                                            <span class="fs-2 d-block text-truncate text-muted">{{ $notification->data['data']['message'] }}
+                                        <button type="button"
+                                            class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom mark-as-read"
+                                            data-id="{{ $notification->id }}"
+                                            @if (in_array($notification->data['data']['notification_type'] ?? '', [
+                                                    'approval_request',
+                                                    'approved',
+                                                    'liked',
+                                                    'reject',
+                                                ])) data-url="{{ $notification->data['data']['notification_type'] === 'approval_request'
+                                                    ? route('ideas.approvals')
+                                                    : ($notification->data['data']['notification_type'] === 'reject'
+                                                        ? route('ideas.my')
+                                                        : route('ideas.index')) }}" @endif>
+                                            <span
+                                                class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
+                                                {{ substr(auth()->user()->where('id', $notification->data['user_id'])->first()->name,0,1) }}
                                             </span>
-                                        </div>
-                                    </a>
+                                            <div class="w-80">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <h6 class="mb-1">{{ $notification->data['data']['title'] }}</h6>
+                                                    <span
+                                                        class="fs-2 d-block text-muted">{{ $notification->created_at->format('H:i') }}</span>
+                                                </div>
+                                                <span class="fs-2 d-block text-truncate text-muted">
+                                                    {{ $notification->data['data']['message'] }}
+                                                </span>
+                                            </div>
+                                        </button>
                                     @endforeach
                                 </div>
                                 <div class="p-3">
@@ -255,25 +269,39 @@
 
                                 <div class="py-3 px-4 bg-primary">
                                     <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
-                                    <div class="mb-0 fs-2 fw-medium text-white">You have {{ auth()->user()->unreadNotifications->count() ?? 0 }} Notifications</div>
+                                    <div class="mb-0 fs-2 fw-medium text-white">You have
+                                        {{ auth()->user()->unreadNotifications->count() ?? 0 }} Notifications</div>
                                 </div>
-                                 <div class="message-body" data-simplebar="">
+                                <div class="message-body notif" data-simplebar="">
                                     @foreach (auth()->user()->unreadNotifications as $notification)
-                                    <a href="javascript:void(0)"
-                                        class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                                        <span
-                                            class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
-                                            {{ substr(auth()->user()->where('id', $notification->data['user_id'])->first()->name, 0, 1) }}
-                                        </span>
-                                        <div class="w-80">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <h6 class="mb-1">{{ $notification->data['data']['title'] }}</h6>
-                                                <span class="fs-2 d-block text-muted ">{{ $notification->created_at->format('H:i') }}</span>
-                                            </div>
-                                            <span class="fs-2 d-block text-truncate text-muted">{{ $notification->data['data']['message'] }}
+                                        <button type="button"
+                                            class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom mark-as-read"
+                                            data-id="{{ $notification->id }}"
+                                            @if (in_array($notification->data['data']['notification_type'] ?? '', [
+                                                    'approval_request',
+                                                    'approved',
+                                                    'liked',
+                                                    'reject',
+                                                ])) data-url="{{ $notification->data['data']['notification_type'] === 'approval_request'
+                                                    ? route('ideas.approvals')
+                                                    : ($notification->data['data']['notification_type'] === 'reject'
+                                                        ? route('ideas.my')
+                                                        : route('ideas.index')) }}" @endif>
+                                            <span
+                                                class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
+                                                {{ substr(auth()->user()->where('id', $notification->data['user_id'])->first()->name,0,1) }}
                                             </span>
-                                        </div>
-                                    </a>
+                                            <div class="w-80">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <h6 class="mb-1">{{ $notification->data['data']['title'] }}</h6>
+                                                    <span
+                                                        class="fs-2 d-block text-muted">{{ $notification->created_at->format('H:i') }}</span>
+                                                </div>
+                                                <span class="fs-2 d-block text-truncate text-muted">
+                                                    {{ $notification->data['data']['message'] }}
+                                                </span>
+                                            </div>
+                                        </button>
                                     @endforeach
                                 </div>
                                 <div class="p-3">
@@ -293,16 +321,26 @@
                         <li class="nav-item hover-dd dropdown">
                             <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2"
                                 aria-expanded="false">
-                                <img src="{{ asset('assets') }}/images/profile/user-1.jpg" alt="user"
-                                    class="profile-pic rounded-circle round-30">
+                                @if (Auth::user()->avatar)
+                                    <img src="{{ asset('storage/uploads/user_avatars/' . Auth::user()->avatar) }}"
+                                        alt="Avatar" class="profile-pic img-fluid">
+                                @else
+                                    <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="Avatar"
+                                        class="profile-pic rounded-circle round-30">
+                                @endif
                             </a>
                             <div class="dropdown-menu pt-0 content-dd overflow-hidden dropdown-menu-end user-dd"
                                 aria-labelledby="drop2">
                                 <div class="profile-dropdown position-relative" data-simplebar="">
                                     <div class=" py-3 border-bottom">
                                         <div class="d-flex align-items-center px-3">
-                                            <img src="{{ asset('assets') }}/images/profile/user-1.jpg"
-                                                class="rounded-circle round-50" alt="">
+                                            @if (Auth::user()->avatar)
+                                                <img src="{{ asset('storage/uploads/user_avatars/' . Auth::user()->avatar) }}"
+                                                    alt="user" class="rounded-circle round-50">
+                                            @else
+                                                <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}"
+                                                    alt="user" class="rounded-circle round-50">
+                                            @endif
                                             <div class="ms-3">
                                                 <h5 class="mb-1 fs-4">{{ Auth::user()->name }}</h5>
                                                 <p class="mb-0 fs-2 d-flex align-items-center text-muted">
@@ -312,6 +350,17 @@
                                         </div>
                                     </div>
                                     <div class="message-body pb-1">
+                                        @can('view history approval')
+                                        <div class="px-3">
+                                            <div class="h6 mb-0 dropdown-item py-2 px-3 rounded-2 link">
+                                                <a href="{{ route('ideas.approved') }}"
+                                                    class=" d-flex  align-items-center ">
+                                                    Approved Ideas
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        @endcan
                                         <div class="px-3">
                                             <div class="h6 mb-0 dropdown-item py-2 px-3 rounded-2 link">
                                                 <a href="{{ route('ideas.my') }}"
@@ -404,8 +453,8 @@
                         <!-- Logo text -->
                         <span class="logo-text">
                             <!-- Light Logo text -->
-                            <img src="{{ asset('assets') }}/images/logos/Logo Cita.png" style="width:100px;height:50px"
-                                class="light-logo ps-2" alt="homepage">
+                            <img src="{{ asset('assets') }}/images/logos/Logo Cita.png"
+                                style="width:100px;height:50px" class="light-logo ps-2" alt="homepage">
                         </span>
                     </a>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
@@ -487,7 +536,7 @@
                                     </a>
                                 </li>
                                 <li class="sidebar-item py-2">
-                                    <a href="http://simcost.sinarmeadow.com/" target="_blank"
+                                    <a href="http://simcost.sinarmeadow.com:8000" target="_blank"
                                         class="d-flex align-items-center position-relative">
                                         <div
                                             class="bg-primary-subtle rounded-circle round-40 me-3 p-6 d-flex align-items-center justify-content-center">
@@ -521,11 +570,11 @@
                             <b class="logo-icon">
                                 <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                                 <!-- Dark Logo icon -->
-                                <img src="{{ asset('assets') }}/images/logos/Logo Cita.png" style="width:100px;height:50px"
-                                    alt="homepage" class="dark-logo">
+                                <img src="{{ asset('assets') }}/images/logos/Logo Cita.png"
+                                    style="width:100px;height:50px" alt="homepage" class="dark-logo">
                                 <!-- Light Logo icon -->
-                                <img src="{{ asset('assets') }}/images/logos/Logo Cita.png" style="width:100px;height:50px"
-                                    alt="homepage" class="light-logo">
+                                <img src="{{ asset('assets') }}/images/logos/Logo Cita.png"
+                                    style="width:100px;height:50px" alt="homepage" class="light-logo">
                             </b>
                             <!--End Logo icon -->
                         </a>
@@ -617,7 +666,7 @@
                                                             <h6 class="mb-0 bg-hover-primary">Frontend</h6>
                                                         </div>
                                                     </a>
-                                                    <a href="http://simcost.sinarmeadow.com/" target="_blank"
+                                                    <a href="http://simcost.sinarmeadow.com:8000" target="_blank"
                                                         class="d-flex align-items-center pb-9 position-relative">
                                                         <div
                                                             class="bg-primary-subtle rounded-circle round-40 me-3 p-6 d-flex align-items-center justify-content-center">
@@ -675,25 +724,42 @@
 
                                 <div class="py-3 px-4 bg-primary">
                                     <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
-                                    <div class="mb-0 fs-2 fw-medium text-white">You have {{ auth()->user()->unreadNotifications->count() ?? 0 }} Notifications</div>
+                                    <div class="mb-0 fs-2 fw-medium text-white">
+                                        You have <span
+                                            id="notificationCount">{{ auth()->user()->unreadNotifications->count() ?? 0 }}</span>
+                                        Notifications
+                                    </div>
                                 </div>
-                                <div class="message-body" data-simplebar="">
+                                <div class="message-body notif" data-simplebar="">
                                     @foreach (auth()->user()->unreadNotifications as $notification)
-                                    <a href="javascript:void(0)"
-                                        class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                                        <span
-                                            class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
-                                            {{ substr(auth()->user()->where('id', $notification->data['user_id'])->first()->name, 0, 1) }}
-                                        </span>
-                                        <div class="w-80">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <h6 class="mb-1">{{ $notification->data['data']['title'] }}</h6>
-                                                <span class="fs-2 d-block text-muted ">{{ $notification->created_at->format('H:i') }}</span>
-                                            </div>
-                                            <span class="fs-2 d-block text-truncate text-muted">{{ $notification->data['data']['message'] }}
+                                        <button type="button"
+                                            class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom mark-as-read"
+                                            data-id="{{ $notification->id }}"
+                                            @if (in_array($notification->data['data']['notification_type'] ?? '', [
+                                                    'approval_request',
+                                                    'approved',
+                                                    'liked',
+                                                    'rejected',
+                                                ])) data-url="{{ $notification->data['data']['notification_type'] === 'approval_request'
+                                                    ? route('ideas.approvals')
+                                                    : ($notification->data['data']['notification_type'] === 'rejected'
+                                                        ? route('ideas.my')
+                                                        : route('ideas.index')) }}" @endif>
+                                            <span
+                                                class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
+                                                {{ substr(auth()->user()->where('id', $notification->data['user_id'])->first()->name,0,1) }}
                                             </span>
-                                        </div>
-                                    </a>
+                                            <div class="w-80">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <h6 class="mb-1">{{ $notification->data['data']['title'] }}</h6>
+                                                    <span
+                                                        class="fs-2 d-block text-muted">{{ $notification->created_at->format('H:i') }}</span>
+                                                </div>
+                                                <span class="fs-2 d-block text-truncate text-muted">
+                                                    {{ $notification->data['data']['message'] }}
+                                                </span>
+                                            </div>
+                                        </button>
                                     @endforeach
                                 </div>
                                 <div class="p-3">
@@ -714,16 +780,26 @@
                         <li class="nav-item hover-dd dropdown">
                             <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2"
                                 aria-expanded="false">
-                                <img src="{{ asset('assets') }}/images/profile/user-1.jpg" alt="user"
-                                    width="30" class="profile-pic rounded-circle">
+                                @if (Auth::user()->avatar)
+                                    <img src="{{ asset('storage/uploads/user_avatars/' . Auth::user()->avatar) }}"
+                                        alt="Avatar" width="30" class="profile-pic rounded-circle">
+                                @else
+                                    <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="Avatar"
+                                        width="30" class="profile-pic rounded-circle">
+                                @endif
                             </a>
                             <div class="dropdown-menu content-dd overflow-hidden pt-0 dropdown-menu-end user-dd"
                                 aria-labelledby="drop2">
                                 <div class="profile-dropdown position-relative" data-simplebar="">
                                     <div class=" py-3 border-bottom">
                                         <div class="d-flex align-items-center px-3">
-                                            <img src="{{ asset('assets') }}/images/profile/user-1.jpg"
-                                                class="rounded-circle round-50" alt="">
+                                            @if (Auth::user()->avatar)
+                                                <img src="{{ asset('storage/uploads/user_avatars/' . Auth::user()->avatar) }}"
+                                                    alt="Avatar" class="rounded-circle round-50">
+                                            @else
+                                                <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}"
+                                                    alt="Avatar" class="rounded-circle round-50">
+                                            @endif
                                             <div class="ms-3">
                                                 <h5 class="mb-1 fs-4">{{ Auth::user()->name }}</h5>
                                                 <p class="mb-0 fs-2 d-flex align-items-center text-muted">
@@ -733,6 +809,17 @@
                                         </div>
                                     </div>
                                     <div class="message-body pb-1">
+                                        @can('view history approval')
+                                        <div class="px-3">
+                                            <div class="h6 mb-0 dropdown-item py-2 px-3 rounded-2 link">
+                                                <a href="{{ route('ideas.approved') }}"
+                                                    class=" d-flex  align-items-center ">
+                                                    Approved Ideas
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        @endcan
                                         <div class="px-3">
                                             <div class="h6 mb-0 dropdown-item py-2 px-3 rounded-2 link">
                                                 <a href="{{ route('ideas.my') }}"
@@ -844,53 +931,96 @@
                     .catch(error => console.error('Error:', error));
             }
 
-            // Event listener untuk tombol "Mark as Read"
-            document.querySelectorAll('.mark-as-read').forEach(button => {
-                button.addEventListener('click', function() {
-                    const notificationId = this.getAttribute('data-id');
-                    fetch('{{ route('notifications.markAsRead') }}', {
+            const messageBodies = document.querySelectorAll('.message-body.notif');
+
+
+            messageBodies.forEach(messageBody => {
+                messageBody.addEventListener('click', function(event) {
+                    const target = event.target.closest('.mark-as-read');
+                    if (target) {
+                        const notificationId = target.getAttribute('data-id');
+                        const redirectUrl = target.getAttribute('data-url');
+
+                        fetch('{{ route('notifications.markAsRead') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    notification_id: notificationId
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    target.remove();
+                                    const notificationCountElement = document.getElementById('notificationCount');
+                                    let currentCount = parseInt(notificationCountElement.textContent);
+                                    notificationCountElement.textContent = currentCount - 1;
+
+                                    // Hanya redirect jika ada data-url
+                                    if (redirectUrl) {
+                                        window.location.href = redirectUrl;
+                                    }
+                                } else {
+                                    alert('Failed to mark notification as read.');
+                                }
+                            })
+                            .catch(error => console.error('Error:', error));
+                    }
+                });
+            });
+
+            // Dapatkan semua elemen dengan kelas .mark-as-read-all
+            const markAsReadAllButtons = document.querySelectorAll('.mark-as-read-all');
+
+            // Tambahkan event listener ke setiap elemen
+            markAsReadAllButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    // Mencegah event bubbling yang mungkin menutup dropdown
+                    event.stopPropagation();
+                    console.log('Mark all as read button clicked.');
+
+                    // Logika untuk menandai semua notifikasi sebagai dibaca
+                    fetch('{{ route('notifications.markAllAsRead') }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                notification_id: notificationId
-                            })
+                            }
                         })
                         .then(response => response.json())
                         .then(data => {
+                            console.log('Response data:', data);
                             if (data.success) {
-                                this.closest('li').remove();
-                                updateNotificationCount();
+                                // Hapus semua elemen notifikasi dari DOM
+                                document.querySelectorAll(
+                                    '.message-body.notif button').forEach(
+                                    button => button.remove());
+
+                                // Update jumlah notifikasi
+                                const notificationCountElement = document
+                                    .getElementById('notificationCount');
+                                notificationCountElement.textContent =
+                                    0; // Set jumlah notifikasi menjadi 0
+
+                                // Tampilkan pesan sukses tanpa alert
+                                const successMessage = document.createElement(
+                                    'div');
+                                successMessage.textContent =
+                                    'All notifications have been marked as read.';
+                                successMessage.classList.add('alert',
+                                    'alert-success');
+                                document.body.appendChild(successMessage);
+                                setTimeout(() => successMessage.remove(),
+                                    3000); // Hapus pesan setelah 3 detik
                             } else {
-                                alert('Failed to mark notification as read.');
+                                alert('Failed to mark all notifications as read.');
                             }
                         })
                         .catch(error => console.error('Error:', error));
                 });
-            });
-
-            // Event listener untuk tombol "Mark as Read All"
-            document.querySelector('.mark-as-read-all').addEventListener('click', function() {
-                fetch('{{ route('notifications.markAllAsRead') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.querySelectorAll('.dropdown-item').forEach(li => li.remove());
-                            updateNotificationCount();
-                            alert('All notifications have been marked as read.');
-                        } else {
-                            alert('Failed to mark all notifications as read.');
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
             });
         });
     </script>

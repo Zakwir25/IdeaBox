@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\teamMember;
 use App\Models\Idea\Idea;
 use App\Models\Idea\IdeaFiles;
 use App\Models\Idea\IdeaApproval;
 use App\Models\Idea\IdeaLikes;
+use App\Models\Idea\teamMember;
 use App\Models\Master\Category;
 use App\Models\Master\Approver;
 use App\Notifications\IdeaNotification;
@@ -17,22 +17,66 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class IdeaController extends Controller
 {
     public function index(Request $request)
     {
         $query = Idea::query()->where('status', 'Published');
-
+        
         // Pencarian berdasarkan judul dan deskripsi
+        if ($request->ajax()) {
+            // Ambil parameter pencarian dan kategori dari request
+            $search = $request->get('search', '');
+            $category = $request->get('category', '');
+
+            // Filter berdasarkan kategori jika ada
+            if ($category) {
+                $query->where('category_id', $category);
+            }
+    
+            // Pencarian berdasarkan judul dan deskripsi
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+    
+            // Pagination
+            $ideas = $query->with('user', 'teamMember', 'category')->paginate(3); // Menampilkan 3 ide per halaman
+            $ideas->map(function ($idea) {
+                $idea->isLikedByUser = $idea->isLikedByUser();
+                return $idea;
+            });
+
+            // Menambahkan parameter pencarian dan kategori pada pagination
+            $ideas->appends(['search' => $search, 'category' => $category]);
+    
+            return response()->json([
+                'data' => $ideas,
+                'pagination' => (string) $ideas->links('vendor.pagination.bootstrap-4'),
+                'category' => $category
+            ]);
+        }
+    
         if ($request->has('search')) {
             $search = $request->input('search');
-            $query->where('title', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
+        if ($request->has('category')) {
+            $category = $request->input('category');
+            $query->where('category_id', $category);
+            // dump($query->get());
+        }
+        
         // Pagination
-        $ideas = $query->paginate(12); // Menampilkan 10 ide per halaman
+        $ideas = $query->paginate(3); // Menampilkan 10 ide per halaman
         $categories = Category::all();
 
         return view('page.idea.index', compact('ideas', 'categories'));
@@ -49,13 +93,13 @@ class IdeaController extends Controller
      */
     public function store(Request $request)
     {
-        // \dd($request->all());
         // Validasi data yang diinput
         $request->validate([
             'title' => 'required|string|unique:ideas,title',
             'category_id' => 'required',
             'description' => 'nullable|string',
             'files.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'members.*' => 'exists:users,id', // Validasi untuk memastikan member ada di tabel users
         ]);
 
         // Siapkan data umum
@@ -109,7 +153,8 @@ class IdeaController extends Controller
                 'message' => $idea->title . ' needs your approval.',
                 'user_id' => $idea->user_id,
             ];
-            $user->notify(new IdeaNotification($data));
+            $notificationType = 'approval_request'; // Tipe notifikasi yang sesuai
+            $user->notify(new IdeaNotification($data, $notificationType));
         }
 
         // Proses upload file jika ada
@@ -138,10 +183,11 @@ class IdeaController extends Controller
             }
         }
 
-        if($request->input('members')){
+        // Proses untuk menambahkan anggota tim
+        if ($request->input('members')) {
             $members = $request->input('members');
-            foreach($members as $member){
-                teamMember::Create([
+            foreach ($members as $member) {
+                teamMember::create([
                     'idea_id' => $idea->id,
                     'leader_id' => auth()->id(),
                     'member_id' => $member
@@ -202,7 +248,8 @@ class IdeaController extends Controller
                 'title' => 'Idea Liked',
                 'message' => $idea->title . ' has been liked by ' . $user->name
             ];
-            $idea->user->notify(new IdeaNotification($data));
+            $notificationType = 'liked'; // Tipe notifikasi yang sesuai
+            $idea->user->notify(new IdeaNotification($data, $notificationType));
         }
 
         return response()->json([
@@ -219,48 +266,73 @@ class IdeaController extends Controller
 
     public function approveIdea(Request $request, $ideaId)
     {
-        $request->validate([
-            'note' => 'nullable|string',
-        ]);
+        Log::info('Approve Idea called for ideaId: ' . $ideaId);
 
-        $idea = Idea::findOrFail($ideaId);
-        $approvalPath = json_decode($idea->approval_path, true);
+        try {
+            $request->validate([
+                'note' => 'nullable|string',
+            ]);
 
-        if (empty($approvalPath)) {
-            return response()->json(['message' => 'No approvers available', 'status' => 'error'], 400);
+            $idea = Idea::findOrFail($ideaId);
+
+            $approvalPath = json_decode($idea->approval_path, true);
+
+            if (empty($approvalPath)) {
+                return response()->json(['message' => 'No approvers available', 'status' => 'error'], 400);
+            }
+
+            $currentApprover = current($approvalPath);
+            $currentUserNik = auth()->user()->nik;
+
+            if ($currentApprover['approver_nik'] != $currentUserNik) {
+                return response()->json(['message' => 'You are not authorized to approve this idea', 'status' => 'error'], 403);
+            }
+
+            $this->saveApprovalOrReject($ideaId, $currentApprover, 'approved', $request->input('note'));
+
+            array_shift($approvalPath);
+            $idea->approval_path = json_encode($approvalPath);
+
+            if (empty($approvalPath)) {
+                $idea->status = 'Published';
+            }
+
+            $idea->save();
+
+            // Get the name of the current approver
+            $approverUser = User::where('nik', $currentUserNik)->first();
+            $approverName = $approverUser ? $approverUser->name : 'Unknown';
+
+            // Notify the user who created the idea
+            $data = [
+                'title' => 'Idea Approved',
+                'message' => $idea->title . ' has been approved by ' . $approverName,
+                'user_id' => $idea->user_id,
+            ];
+            $notificationType = 'approved'; // Tipe notifikasi yang sesuai
+            $idea->user->notify(new IdeaNotification($data, $notificationType));
+
+            // Notify the first approver in the remaining approval path
+            if (!empty($approvalPath)) {
+                $nextApprover = $approvalPath[0];
+                $approverNik = $nextApprover['approver_nik'];
+                $nextApproverUser = User::where('nik', $approverNik)->first();
+                if ($nextApproverUser) {
+                    $nextApproverData = [
+                        'title' => 'New Idea Approval Required',
+                        'message' => 'You have a new idea to approve: ' . $idea->title,
+                        'user_id' => $nextApproverUser->id,
+                    ];
+                    $notificationType = 'approval_request'; // Tipe notifikasi yang sesuai
+                    $nextApproverUser->notify(new IdeaNotification($nextApproverData, $notificationType));
+                }
+            }
+
+            return response()->json(['message' => 'Idea approved successfully', 'status' => 'success'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error approving idea: ' . $e->getMessage());
+            return response()->json(['message' => 'Internal Server Error', 'status' => 'error'], 500);
         }
-
-        $currentApprover = current($approvalPath);
-        $currentUserNik = auth()->user()->nik;
-
-        if ($currentApprover['approver_nik'] != $currentUserNik) {
-            return response()->json(['message' => 'You are not authorized to approve this idea', 'status' => 'error'], 403);
-        }
-
-        $this->saveApprovalOrReject($ideaId, $currentApprover, 'approved', $request->input('note'));
-
-        array_shift($approvalPath);
-        $idea->approval_path = json_encode($approvalPath);
-
-        if (empty($approvalPath)) {
-            $idea->status = 'Published';
-        }
-
-        $idea->save();
-
-        // Notify users associated with the idea
-        $data = [
-            'title' => 'Idea Approved',
-            'message' => $idea->title . ' has been approved by ' . auth()->user()->name,
-            'user_id' => $idea->user_id,
-        ];
-
-        $usersToNotify = $idea->users; // Asumsikan ada relasi 'users' di model Idea
-        foreach ($usersToNotify as $user) {
-            $user->notify(new IdeaNotification($data));
-        }
-
-        return response()->json(['message' => 'Idea approved successfully', 'status' => 'success'], 200);
     }
 
     public function rejectIdea(Request $request, $ideaId)
@@ -295,11 +367,9 @@ class IdeaController extends Controller
             'message' => $idea->title . ' has been rejected by ' . auth()->user()->name,
             'user_id' => $idea->user_id,
         ];
+        $notificationType = 'rejected'; // Tipe notifikasi yang sesuai
+        $idea->user->notify(new IdeaNotification($data, $notificationType));
 
-        $usersToNotify = $idea->users; // Asumsikan ada relasi 'users' di model Idea
-        foreach ($usersToNotify as $user) {
-            $user->notify(new IdeaNotification($data));
-        }
 
         return response()->json(['message' => 'Idea rejected successfully', 'status' => 'success'], 200);
     }
@@ -355,6 +425,8 @@ class IdeaController extends Controller
     {
         $userId = auth()->id();
         $ideas = Idea::where('user_id', $userId)
+            ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
+            ->select('*', 'ideas.status as status')
             ->with(['category', 'ideaFiles', 'approvals'])
             ->get();
 
@@ -385,6 +457,7 @@ class IdeaController extends Controller
         $ideas = Idea::where('user_id', $userId)
             ->with(['category', 'ideaFiles', 'approvals'])
             ->get();
+        
         return view('page.idea.my_ideas', compact('ideas'));
     }
 
@@ -401,8 +474,17 @@ class IdeaController extends Controller
         return view('page.idea.my_ideaLikes', compact('ideas', 'categories'));
     }
 
+    public function approvedIdeas(){
+        $nik = auth()->user()->nik;
+        $ideas = IdeaApproval::leftJoin('ideas', 'ideas.id', '=', 'idea_approvals.idea_id')
+        ->where('approval_id', $nik)
+        ->select('title', 'idea_approvals.status as status', 'note')
+        ->get();
+        return view('page.idea.approved_ideas', compact('ideas'));
+    }
 
-// ==============================================================Notification===========================================================
+
+    // ==============================================================Notification===========================================================
     public function markAsRead(Request $request)
     {
         $notificationId = $request->input('notification_id');
@@ -441,4 +523,5 @@ class IdeaController extends Controller
             return response()->json(['message' => 'Failed to delete notifications.'], 500);
         }
     }
+
 }

@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\standardData;
-use App\Models\Master\Department;
-use App\Models\Master\Section;
-use App\Models\Leaderboard;
+use App\Models\Idea\standardData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -15,24 +12,24 @@ class Dashboard extends Controller
 {
     public function index()
     {
-        
+
         $leaderboardNoVAA = DB::table('users')
-        ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
-        ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
+        ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')   
         ->leftjoin('categories', 'categories.id', '=', 'ideas.category_id')
-        ->select('users.name', DB::raw('count(ideas.id) as idea_count'))
+        ->select('users.name as name', DB::raw('count(ideas.id) as idea_count'))
         ->where('categories.name', 'NoVA-A Elimination')
-        ->groupBy('users.name')
+        ->where('ideas.status', 'Published')
+        ->groupBy('name')
         ->orderBy('idea_count', 'DESC')
         ->take(10)
         ->get(); // Ganti dengan logika yang sesuai
 
         $leaderboardBestpractice = DB::table('users')
         ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
-        ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
         ->leftjoin('categories', 'categories.id', '=', 'ideas.category_id')
-        ->select('users.name', DB::raw('count(ideas.id) as idea_count'))
+        ->select('users.name as name', DB::raw('count(ideas.id) as idea_count'))
         ->where('categories.name', 'Best Practice Implementation')
+        ->where('ideas.status', 'Published')
         ->groupBy('users.name')
         ->orderBy('idea_count', 'DESC')
         ->take(10)
@@ -40,10 +37,10 @@ class Dashboard extends Controller
 
         $leaderboardImprovment = DB::table('users')
         ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
-        ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
         ->leftjoin('categories', 'categories.id', '=', 'ideas.category_id')
-        ->select('users.name', DB::raw('count(ideas.id) as idea_count'))
+        ->select('users.name as name', DB::raw('count(ideas.id) as idea_count'))
         ->where('categories.name', 'Improvement Implementation')
+        ->where('ideas.status', 'Published')
         ->groupBy('users.name')
         ->orderBy('idea_count', 'DESC')
         ->take(10)
@@ -51,16 +48,16 @@ class Dashboard extends Controller
 
         $leaderboardArtificialIntelegents = DB::table('users')
         ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
-        ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
         ->leftjoin('categories', 'categories.id', '=', 'ideas.category_id')
-        ->select('users.name', DB::raw('count(ideas.id) as idea_count'))
+        ->select('users.name as name', DB::raw('count(ideas.id) as idea_count'))
         ->where('categories.name', 'AI Implementation')
+        ->where('ideas.status', 'Published')
         ->groupBy('users.name')
         ->orderBy('idea_count', 'DESC')
         ->take(10)
         ->get(); // Ganti dengan logika yang sesuai
 
-        
+        // dd($leaderboardNoVAA);
 
         $results = DB::table('users')
             ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
@@ -69,7 +66,7 @@ class Dashboard extends Controller
             ->groupBy('created_date', 'department_name')
             ->orderBy('created_date', 'ASC')
             ->get();
-        
+
             $months = DB::table('ideas')
             ->select(DB::raw('DISTINCT MONTH(created_at) as month'))
             ->orderBy('month', 'ASC')
@@ -80,20 +77,22 @@ class Dashboard extends Controller
             ->orderBy('year', 'ASC')
             ->pluck('year');
 
-            
-        
-        $pieChart = DB::table('users')
-        ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
-        ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
+
+
+        $pieChart = DB::table('ideas')
+        ->join('users', 'ideas.user_id', '=', 'users.id')
+        ->join('departments', 'users.department_id', '=', 'departments.id')
         ->select(DB::raw('count(ideas.id) as idea_count'), 'departments.name as department_name')
-        ->groupBy('department_name')
+        ->where('ideas.status', 'Published')
+        ->groupBy('departments.id', 'departments.name')
         ->get();
 
-        $barChart = DB::table('users')
-        ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
-        ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
+        $barChart = DB::table('ideas')
+        ->join('users', 'ideas.user_id', '=', 'users.id')
+        ->join('departments', 'users.department_id', '=', 'departments.id')
         ->select(DB::raw('count(ideas.id) as idea_count'), 'departments.name as department_name')
-        ->groupBy('department_name')
+        ->where('ideas.status', 'Published')
+        ->groupBy('departments.id', 'departments.name')
         ->get();
 
         // Persiapkan data untuk grafik
@@ -104,18 +103,19 @@ class Dashboard extends Controller
         // Hitung Target Data
         $standardData = standardData::select('name','value')
         ->get();
-        
+
         $actualData = DB::table('ideas')
         ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
         ->select('categories.name as name',DB::raw('count(ideas.id) as idea_count'))
         ->whereNotNull('name')
-        ->groupBy('name',)
+        ->where('ideas.status', 'Published')
+        ->groupBy('name')
         ->get();
 
         $dataPercentages = [];
         foreach ($standardData as $index => $standard) {
-            $actualValue = $actualData[$index]->idea_count;
-            
+            $actualValue = $actualData[$index]->idea_count ?? 0;
+
             // Menghitung persentase
             $percentage = $actualValue != 0 ? ($actualValue / $standard->value) * 100 : 0;
 
@@ -139,11 +139,12 @@ class Dashboard extends Controller
         ->leftJoin('users', 'users.id', '=', 'ideas.user_id')
         ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
         ->select('departments.name as name', DB::raw('count(ideas.id) as idea_count'))
+        ->where('ideas.status', 'Published')
         ->groupBy('name')
         ->get();
 
-        
-        // dd($countUsers, $countIdeas->firstWhere('name', 'Engineering & Maintainance'));
+
+        // dd($countUsers, $countIdeas->firstWhere('name', 'Supply Chain')->idea_count);
 
         $effectiveDatas = [];
         foreach($countUsers as $index => $data){
@@ -155,11 +156,8 @@ class Dashboard extends Controller
             ];
         }
 
-        // dd($countUsers, $countIdeas, $temp);
 
-        // dd($dataPercentages);
-
-        return view('dashboard', compact('results', 'dates', 'ideaCounts', 'departmentNames', 'pieChart', 'barChart', 'leaderboardNoVAA', 'leaderboardBestpractice', 
+        return view('dashboard', compact('results', 'dates', 'ideaCounts', 'departmentNames', 'pieChart', 'barChart', 'leaderboardNoVAA', 'leaderboardBestpractice',
         'leaderboardImprovment', 'leaderboardArtificialIntelegents', 'months', 'years', 'dataPercentages', 'effectiveDatas'));
     }
 
@@ -167,7 +165,7 @@ class Dashboard extends Controller
     {
         $month = $request->input('month_leaderboard');
         $year = $request->input('year_leaderboard');
-        
+
 
         $leaderboardImprovment = DB::table('users')
             ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
@@ -176,30 +174,42 @@ class Dashboard extends Controller
             ->whereBetween('ideas.created_at', [$month, $year]) // Filter berdasarkan tanggal
             ->groupBy('users.name')
             ->orderBy('idea_count', 'DESC')
+            ->where('ideas.status', 'Published')
             ->get();
 
 
 
         return response()->json($leaderboardImprovment);
     }
-    
+
     public function getleaderboardNoVAA(Request $request)
-    {
-        $month = $request->input('month_leaderboard');
-        $year = $request->input('year_leaderboard');
+{
+    $month = $request->input('month_leaderboard');
+    $year = $request->input('year_leaderboard');
 
-        $leaderboardNoVAA = DB::table('users')
-            ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
-            ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
-            ->select('users.name', DB::raw('count(ideas.id) as idea_count'))
-            ->whereBetween('ideas.created_at', [$month, $year]) // Filter berdasarkan tanggal
-            ->groupBy('users.name')
-            ->orderBy('idea_count', 'DESC')
-            ->get();
+    $query = DB::table('users')
+        ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
+        ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
+        ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
+        ->select('users.name', DB::raw('count(ideas.id) as idea_count'))
+        ->where('categories.name', 'NoVA-A Elimination')
+        ->where('ideas.status', 'Published')
+        ->groupBy('users.name')
+        ->orderBy('idea_count', 'DESC');
 
-        return response()->json($leaderboardNoVAA);
+    if ($month) {
+        $query->whereMonth('ideas.created_at', $month);
     }
-    
+
+    if ($year) {
+        $query->whereYear('ideas.created_at', $year);
+    }
+
+    $leaderboardNoVAA = $query->get();
+
+    return response()->json($leaderboardNoVAA);
+}
+
     public function getleaderboardBestpractice(Request $request)
     {
         $month = $request->input('month_leaderboard');
@@ -212,11 +222,12 @@ class Dashboard extends Controller
             ->whereBetween('ideas.created_at', [$month, $year]) // Filter berdasarkan tanggal
             ->groupBy('users.name')
             ->orderBy('idea_count', 'DESC')
+            ->where('ideas.status', 'Published')
             ->get();
 
         return response()->json($leaderboardBestpractice);
     }
-    
+
     public function getleaderboardArtificialIntelegents(Request $request)
     {
         $month = $request->input('month_leaderboard');
@@ -229,12 +240,13 @@ class Dashboard extends Controller
             ->whereBetween('ideas.created_at', [$month, $year]) // Filter berdasarkan tanggal
             ->groupBy('users.name')
             ->orderBy('idea_count', 'DESC')
+            ->where('ideas.status', 'Published')
             ->get();
 
 
         return response()->json($leaderboardArtificialIntelegents);
     }
-    
+
     public function getLeaderboardData(Request $request)
     {
         $year =$request->query('year');
@@ -243,24 +255,24 @@ class Dashboard extends Controller
 
         $query =  DB::table('users')
         ->leftJoin('ideas', 'users.id', '=', 'ideas.user_id')
-        ->leftJoin('idea_approvals', 'ideas.id', '=', 'idea_approvals.idea_id')
         ->leftjoin('categories', 'categories.id', '=', 'ideas.category_id')
-        ->where('categories.name', $leaderboardName);
+        ->where('categories.name', $leaderboardName)
+        ->where('ideas.status', 'Published');
 
         if($month){
             $query->whereMonth('ideas.created_at', $month);
         }
-        
+
         if($year){
             $query->whereYear('ideas.created_at', $year);
         }
 
-        $query->select('users.name', DB::raw('count(ideas.id) as idea_count'), 'ideas.created_at')
-        ->groupBy('users.name', 'ideas.created_at')
+        $query->select('users.name', DB::raw('count(ideas.id) as idea_count'), DB::raw('month(ideas.created_at) as created_at'))
+        ->groupBy('users.id', 'created_at')
         ->orderBy('idea_count', 'DESC')
         ->take(10);
-        
-            
+
+
 
         $leaderboardData = $query->get();
 
@@ -278,16 +290,15 @@ class Dashboard extends Controller
         ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
         ->select(DB::raw('count(ideas.id) as idea_count'), 'departments.name as department_name', DB::raw('month(ideas.created_at) as created_at'), DB::raw('MONTHNAME(ideas.created_at) as month_name'))
         ->where('categories.name', $category)
-        ->groupBy('department_name', 'ideas.created_at')
-        ->orderBy('created_at', 'asc');
+        ->groupBy('department_name', 'created_at')
+        ->orderBy('created_at', 'asc')
+        ->where('ideas.status', 'Published');
 
         if($year){
             $query->whereYear('ideas.created_at', $year);
         }
         $BarChartData = $query->get();
-
-        //Test
-
+ 
         // Data bulan
         $barNames = array_unique($query->pluck('department_name')->toArray());
 
@@ -303,37 +314,36 @@ class Dashboard extends Controller
             $data[$chartData->department_name][$chartData->created_at-1] = $chartData->idea_count;
         }
 
-
         return response()->json($data);
     }
 
-    public function getTargetData(Request $request){
-        
+    public function getTargetData(Request $request)
+    {
         $year = $request->query('year');
 
-        $standardData = standardData::select('name','value');
-        if($year){
+        $standardData = standardData::select('name', 'value');
+        if ($year) {
             $standardData->where('year', $year);
         }
         $standardData = $standardData->get();
 
         $actualData = DB::table('ideas')
-        ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
-        ->select('categories.name as name',DB::raw('count(ideas.id) as idea_count'), 'ideas.created_at as created_at')
-        ->whereNotNull('name');
-        if($year){
-            $actualData->whereYear('ideas.created_at', $year)->groupBy('name', 'created_at');
-        }else{
-            $actualData->groupBy('name');
+            ->leftJoin('categories', 'categories.id', '=', 'ideas.category_id')
+            ->select('categories.name as name', DB::raw('count(ideas.id) as idea_count'))
+            ->whereNotNull('name')
+            ->where('ideas.status', 'Published');
+
+        if ($year) {
+            $actualData->whereYear('ideas.created_at', $year);
         }
-        $actualData = $actualData->get();
+        $actualData = $actualData->groupBy('name')->get();
 
         $dataPercentages = [];
-        foreach ($standardData as $index => $standard) {
-            $actualValue = $actualData->firstWhere('name', $standard->name)->idea_count;
-            
+        foreach ($standardData as $standard) {
+            $actualValue = $actualData->firstWhere('name', $standard->name)->idea_count ?? 0;
+
             // Menghitung persentase
-            $percentage = number_format($actualValue != 0 ? ($actualValue / $standard->value) * 100 : 0, 0);
+            $percentage = $actualValue != 0 ? ($actualValue / $standard->value) * 100 : 0;
 
             $dataPercentages[] = [
                 'name' => $standard->name,
@@ -342,11 +352,10 @@ class Dashboard extends Controller
                 'percentage' => number_format($percentage, 0),
             ];
         }
-        
 
         return response()->json($dataPercentages);
     }
-    
+
     public function targetIndex(){
         $standardData = standardData::get();
 
@@ -355,7 +364,7 @@ class Dashboard extends Controller
          $text = "Are you sure you want to delete?";
 
          confirmDelete($title, $text);
-         
+
         return view('page.master.Target.index', ['standardData' => $standardData]);
     }
 
@@ -373,7 +382,7 @@ class Dashboard extends Controller
         $standardData->value = $request->input('value');
         $standardData->year = $request->input('year');
         $standardData->save();
-        
+
         return redirect('/targets')->with('status','Target Update Successfully');
     }
 
@@ -384,7 +393,7 @@ class Dashboard extends Controller
             'value' => $request->input('value'),
             'year' => $request->input('year')
         ]);
-        
+
         return redirect('/targets')->with('status','Target Created Successfully');
     }
 }

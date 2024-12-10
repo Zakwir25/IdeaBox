@@ -59,14 +59,13 @@ class ApproverController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'section_id' => 'required|exists:sections,id',
-            'approver_id' => 'required|exists:users,id',
-            'level' => 'required|integer|min:1',
-        ]);
-
         $approver = Approver::findOrFail($id);
-        $approver->update($request->all());
+        $approver->section_id = $request->input('section_id')[0];
+        $approver->approver_nik = $request->input('approver_nik')[0];
+        $approver->level = $request->input('level')[0];
+        $approver->is_special = $request->input('is_special')[0];
+        $approver->skip_to_level = $request->input('skip_to_level')[0];
+        $approver->save();
         Alert::toast('Approver updated successfully', 'success');
         return redirect()->route('approvers.index');
     }

@@ -13,10 +13,12 @@ class IdeaNotification extends Notification implements ShouldQueue
     use Queueable;
 
     private $data;
+    private $notificationType;
 
-    public function __construct($data)
+    public function __construct($data, $notificationType)
     {
         $this->data = $data;
+        $this->notificationType = $notificationType;
     }
 
     public function via($notifiable)
@@ -24,19 +26,13 @@ class IdeaNotification extends Notification implements ShouldQueue
         return ['database'];
     }
 
-    // public function toMail($notifiable)
-    // {
-    //     return (new MailMessage)
-    //                 ->line('There is an update on an idea.')
-    //                 ->action('View Idea', url('/ideas/'.$this->idea->id))
-    //                 ->line('Thank you for using our application!');
-    // }
-
     public function toDatabase($notifiable)
     {
         return [
            'user_id' => $notifiable->id,
-           'data' => $this->data,
+           'data' => array_merge($this->data, [
+               'notification_type' => $this->notificationType
+           ]),
         ];
     }
 }

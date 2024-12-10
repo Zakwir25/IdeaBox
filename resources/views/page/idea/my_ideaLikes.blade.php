@@ -4,36 +4,190 @@
     @endsection
 
     @push('css')
+        <style>
+            #particles-js {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+            }
+
+            .badge {
+                background: linear-gradient(45deg, #74c0fc, #4dabf7);
+                color: white;
+            }
+
+            .note-title {
+                transition: color 0.3s;
+            }
+
+            .note-title:hover {
+                color: #ff6b6b;
+            }
+
+            .side-stick {
+                transition: width 0.3s;
+            }
+
+            .side-stick:hover {
+                width: 10px;
+            }
+
+            .single-note-item {
+                opacity: 0;
+                transform: scale(0.95);
+                transition: opacity 0.3s, transform 0.3s;
+            }
+
+            .single-note-item.show {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .nav-link.active {
+                background: linear-gradient(45deg, #4dabf7, #74c0fc);
+                color: white;
+            }
+
+            .modal-image {
+                width: 100%;
+                height: auto;
+            }
+
+            /* Responsive styles */
+            @media (max-width: 768px) {
+                .single-note-item {
+                    width: 100%;
+                }
+
+                .card-body {
+                    padding: 1rem;
+                }
+
+                h1 {
+                    font-size: 1.5rem;
+                    margin-bottom: 1rem;
+                }
+
+                .nav-pills {
+                    flex-wrap: nowrap;
+                    overflow-x: auto;
+                    padding: 0.5rem !important;
+                }
+
+                .nav-link {
+                    padding: 0.5rem !important;
+                    font-size: 0.8rem !important;
+                }
+
+                .btn {
+                    padding: 0.5rem !important;
+                    font-size: 0.8rem !important;
+                }
+
+                .modal-dialog {
+                    margin: 0.5rem;
+                }
+
+                .shop-content {
+                    margin-top: 1rem;
+                }
+
+                .modal-image {
+                    max-height: 250px;
+                    object-fit: contain;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .col-md-3 {
+                    width: 100%;
+                }
+
+                .me-8 {
+                    margin-right: 1rem !important;
+                }
+
+                .additional-info {
+                    margin-left: 0 !important;
+                    margin-top: 1rem !important;
+                }
+
+                .user-info .row {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .user-info .col-md-3 {
+                    margin-bottom: 1rem;
+                }
+
+                .user-info img {
+                    margin: 0 auto;
+                }
+
+                .modal-dialog {
+                    margin: 0;
+                    max-width: 100%;
+                    height: 100%;
+                }
+
+                .modal-content {
+                    height: 100%;
+                    border-radius: 0;
+                }
+
+                .carousel-item img {
+                    max-height: 200px;
+                    width: 100%;
+                    object-fit: contain;
+                }
+            }
+
+            /* Tablet specific styles */
+            @media (min-width: 768px) and (max-width: 1024px) {
+                .col-md-3 {
+                    width: 50%;
+                }
+
+                .card-body {
+                    padding: 1.25rem;
+                }
+
+                .modal-dialog {
+                    max-width: 90%;
+                }
+
+                .carousel-item img {
+                    max-height: 300px;
+                    width: 100%;
+                    object-fit: contain;
+                }
+            }
+        </style>
     @endpush
 
-    <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
+    <div id="particles-js" style="position: absolute; width: 100%; height: 100%;"></div>
+
+    <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-2">
         <div class="card-body px-0">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1 class="font-weight-medium mb-0 ml-3">My Favorite Ideas</h1>
-                <nav aria-label="breadcrumb mr-3">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a class="text-muted text-decoration-none" href="{{ route('dashboard') }}">Home</a>
-                        </li>
-                        <li class="breadcrumb-item text-muted" aria-current="page">My Favorite Ideas</li>
-                    </ol>
-                </nav>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex flex-column">
+                    <h1 class="font-weight-medium mb-3 ml-3">My Favorite Ideas</h1>
+                    <div class="widget-content searchable-container list position-relative">
+                        <input type="text" id="search-input" class="form-control"
+                            placeholder="Cari judul atau deskripsi...">
+                        <span id="clear-search" class="position-absolute"
+                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">&times;</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+                    <img src="{{ asset('assets') }}/images/logos/Maskot CITA.png" alt="homepage"
+                        style="width: 100px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="widget-content searchable-container list">
-        <!-- Form Pencarian -->
-        <form method="GET" action="{{ route('ideas.index') }}" class="mb-3 d-flex align-items-center">
-            <input type="text" name="search" class="form-control w-25" placeholder="Cari judul atau deskripsi..."
-                value="{{ request('search') }}">
-            @if (request('search'))
-                <button type="button" class="btn btn-link text-decoration-none btn-lg"
-                    onclick="document.querySelector('input[name=search]').value=''; this.form.submit();">
-                    &times;
-                </button>
-            @endif
-        </form>
 
         <ul class="nav nav-pills p-3 mb-3 rounded align-items-center card flex-row">
             <li class="nav-item">
@@ -58,67 +212,118 @@
 
         <div class="tab-content">
             <div id="note-full-container" class="note-has-grid row">
-                @foreach ($ideas as $idea)
-                    <div class="col-md-3 single-note-item all-category note-{{ $idea->category_id }}">
-                        <div class="card card-body">
-                            <span class="side-stick"
-                                style="background-color:
-                            @if ($idea->category_id == 1) var(--bs-primary)
-                            @elseif($idea->category_id == 2)
-                                var(--bs-danger)
-                            @elseif($idea->category_id == 3)
-                                var(--bs-warning)
-                            @elseif($idea->category_id == 4)
-                                var(--bs-success) @endif
-                        "></span>
-                            <h6 class="note-title text-truncate w-75 mb-0" data-noteheading="{{ $idea->title }}">
-                                {{ $idea->title }} </h6>
-                            <p class="note-date fs-2">{{ $idea->created_at->format('d M Y') }}</p>
-                            <div class="note-content">
-                                <p class="note-inner-content" data-notecontent="{{ $idea->description }}">
-                                    @if (strlen($idea->description) > 100)
-                                        {!! substr($idea->description, 0, 100) !!}... <a href="javascript:void(0)" class="read-more"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editIdeaModal{{ $idea->id }}">Read More</a>
-                                    @else
-                                        {!! $idea->description !!}
-                                    @endif
-                                </p>
+            @forelse ($ideas as $idea)
+                    <div class="col-md-3 single-note-item all-category note-{{ $idea->category_id }}"
+                        data-title="{{ $idea->title }}" data-description="{{ $idea->description }}">
+                        <div class="card card-body ">
+                            <div class="me-8 d-flex justify-content-start align-items-center">
+                                @if ($idea->user->avatar)
+                                    <img src="{{ asset('storage/uploads/user_avatars/' . $idea->user->avatar) }}"
+                                        alt="Avatar" class="rounded-circle" width="72" height="72">
+                                @else
+                                    <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="Avatar"
+                                        class="rounded-circle" width="72" height="72">
+                                @endif
+
+                                @if (in_array($idea->category_id, [1, 2, 3, 4]))
+                                    <div class="additional-info ms-3 mt-3 overflow-hidden">
+                                        <ul class="list-unstyled ">
+
+                                            <h5 class="note-title text-truncate w-100 mb-0 fw-semibold"
+                                                data-noteheading="{{ strtoupper($idea->title) }}">
+                                                {{ strtoupper($idea->title) }}
+                                            </h5>
+                                            @if ($idea->before)
+                                                <li class="text-truncate"><strong>Before:</strong>
+                                                    {{$idea->before }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->after)
+                                                <li class="text-truncate"><strong>After:</strong>
+                                                    {{$idea->after }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 1 && $idea->benefit)
+                                                <li class="text-truncate"><strong>Benefit:</strong>
+                                                    {{ $idea->benefit }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 2 && $idea->sumber_best_practice)
+                                                <li class="text-truncate"><strong>Sumber Best Practice:</strong>
+                                                    {{$idea->sumber_best_practice }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 3 && $idea->proses_improve)
+                                                <li ><strong>Proses yang diimprove:</strong>
+                                                    {{ strlen($idea->proses_improve) > 20 ? substr($idea->proses_improve, 0, 17) . '...' : $idea->proses_improve }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 4 && $idea->nama_ai)
+                                                <li><strong>Nama AI:</strong>
+                                                    {{ strlen($idea->nama_ai) > 20 ? substr($idea->nama_ai, 0, 17) . '...' : $idea->nama_ai }}
+                                                </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                @endif
                             </div>
-                            <div class="d-flex align-items-center">
-                                <a href="javascript:void(0)" class="link me-1 like-button"
-                                    data-idea-id="{{ $idea->id }}">
-                                    @if ($idea->isLikedByUser())
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="red"
-                                            class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
-                                        </svg>
-                                    @else
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-                                        </svg>
-                                    @endif
-                                </a>
-                                <span class="like-count">{{ $idea->likes_count }}</span>
-                                <!-- Menampilkan jumlah like -->
-                                <div class="ms-auto">
-                                    <a href="javascript:void(0)" class="link me-1" data-bs-toggle="modal"
-                                        data-bs-target="#editIdeaModal{{ $idea->id }}">
-                                        <i class="ti ti-zoom-in fs-4"></i>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span
+                                            class="badge {{ $idea->category_id == 1 ? 'text-bg-success' : ($idea->category_id == 2 ? 'text-bg-primary' : ($idea->category_id == 3 ? 'text-bg-warning' : ($idea->category_id == 4 ? 'text-bg-info' : 'text-bg-secondary'))) }} fs-2 fw-semibold">{{ $idea->category->name ?? 'Not Yet have category' }}</span>
+                                    </div>
+                                    <p class="note-date fs-2">{{ $idea->created_at->format('d M Y') }}</p>
+                                </div>
+                                <span class="side-stick"
+                                    style="background-color:
+                                @if ($idea->category_id == 1) var(--bs-primary)
+                                @elseif($idea->category_id == 2)
+                                    var(--bs-danger)
+                                @elseif($idea->category_id == 3)
+                                    var(--bs-warning)
+                                @elseif($idea->category_id == 4)
+                                    var(--bs-success) @endif
+                            "></span>
+
+                                <div class="d-flex align-items-center">
+                                    <a href="javascript:void(0)" class="link me-1 like-button"
+                                        data-idea-id="{{ $idea->id }}" onClick="likeButton(this)">
+                                        @if ($idea->isLikedByUser())
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="red"
+                                                class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path
+                                                    d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                                            </svg>
+                                        @else
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path
+                                                    d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                                            </svg>
+                                        @endif
                                     </a>
+                                    <span class="like-count">{{ $idea->likes_count }}</span>
+                                    <div class="ms-auto">
+                                        <a href="javascript:void(0)" class="link me-1" data-bs-toggle="modal"
+                                            data-bs-target="#editIdeaModal{{ $idea->id }}">
+                                            <i class="ti ti-zoom-in fs-4"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="col-12 text-center">
+                        <p class="fs-4">No favorite idea yet.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
 
@@ -152,13 +357,16 @@
                                                             <div
                                                                 class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                                                                 <img src="{{ asset('storage/' . $file->file) }}"
-                                                                    alt="Gambar Idea" class="img-fluid">
+                                                                    alt="Gambar Idea" class="img-fluid modal-image"
+                                                                    style="width: 300px; height: auto;">
                                                             </div>
                                                         @endforeach
                                                     @else
                                                         <div class="carousel-item active">
                                                             <img src="{{ asset('assets/images/gallery/no_image.jpg') }}"
-                                                                alt="Gambar Tidak Tersedia" class="img-fluid">
+                                                                alt="Gambar Tidak Tersedia"
+                                                                class="img-fluid modal-image"
+                                                                style="width: 300px; height: auto;">
                                                         </div>
                                                     @endif
                                                 </div>
@@ -178,11 +386,42 @@
                                         </div>
                                         <div class="col-lg-6">
                                             <div class="shop-content">
-                                                <h4>{{ $idea->title }}</h4>
-                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                <!-- User Information -->
+                                                <div class="user-info mt-3">
+                                                    <h6 class="mb-3 fs-4 fw-semibold ">User Information:</h6>
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            @if ($idea->user->avatar)
+                                                                <img src="{{ asset('storage/uploads/user_avatars/' . $idea->user->avatar) }}"
+                                                                    alt="Avatar" class="rounded-circle img-fluid"
+                                                                    style="width: 72px; height: 72px;">
+                                                            @else
+                                                                <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}"
+                                                                    alt="Avatar" class="rounded-circle img-fluid"
+                                                                    style="width: 72px; height: 72px;">
+                                                            @endif
+                                                        </div>
+                                                        <div class="col-md-9">
+                                                            <ul class="list-unstyled">
+                                                                <li><strong>Name:</strong> {{ $idea->user->name }}</li>
+                                                                <li><strong>Email:</strong> {{ $idea->user->email }}
+                                                                </li>
+                                                                <li><strong>Section:</strong>
+                                                                    {{ $idea->user->section->name ?? 'N/A' }}</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <h4 class="mb-0 fw-semibold mt-5">"{{ strtoupper($idea->title) }}"
+                                                </h4>
+                                                <div
+                                                    class="d-flex align-items-center gap-2 mb-2 justify-content-between">
                                                     <span
                                                         class="badge {{ $idea->category_id == 1 ? 'text-bg-success' : ($idea->category_id == 2 ? 'text-bg-primary' : ($idea->category_id == 3 ? 'text-bg-warning' : ($idea->category_id == 4 ? 'text-bg-info' : 'text-bg-secondary'))) }} fs-2 fw-semibold">{{ $idea->category->name ?? 'Not Yet have category' }}</span>
+                                                    <p class="note-date fs-2">{{ $idea->created_at->format('d M Y') }}
+                                                    </p>
                                                 </div>
+
 
                                                 @if ($idea->category_id == 1 || $idea->category_id == 2 || $idea->category_id == 3 || $idea->category_id == 4)
                                                     <div class="additional-info mt-3">
@@ -231,10 +470,39 @@
     @endforeach
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset('assets/js/particles/particles.js') }}"></script>
+    <script src="{{ asset('assets/js/particles/app.js') }}"></script>
+    <script src="{{ asset('assets/js/particles/lib/stats.js') }}"></script>
+
+
+    <script>
+        var count_particles, stats, update;
+        stats = new Stats;
+        stats.setMode(0);
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild(stats.domElement);
+        count_particles = document.querySelector('.js-count-particles');
+        update = function() {
+            stats.begin();
+            stats.end();
+            if (window.pJSDom[0].pJS.particles && window.pJSDom[0].pJS.particles.array) {
+                if (count_particles) {
+                    count_particles.innerText = window.pJSDom[0].pJS.particles.array.length;
+                }
+            }
+            requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
+    </script>
+
     @push('scripts')
         <!-- Load jQuery -->
         <script>
             $(document).ready(function() {
+                particlesJS.load('particles-js', '{{ asset('assets/js/particles/particles.json') }}', function() {});
+
                 updateLikeCounts();
 
                 // Event listener for category tabs
@@ -256,9 +524,9 @@
                         document.querySelectorAll('.single-note-item').forEach(function(note) {
                             if (category === 'all-category' || note.classList.contains('note-' +
                                     category)) {
-                                note.style.display = 'block';
+                                note.classList.add('show');
                             } else {
-                                note.style.display = 'none';
+                                note.classList.remove('show');
                             }
                         });
                     });
@@ -328,7 +596,48 @@
                 // Polling every 5 seconds to update like counts
                 setInterval(updateLikeCounts, 5000);
 
+                // Event listener for search input
+                $('#search-input').on('keyup', function() {
+                    var searchTerm = $(this).val().toLowerCase();
+                    var hasResults = false;
+
+                    // Tampilkan atau sembunyikan ikon "X" berdasarkan input
+                    $('#clear-search').toggle(searchTerm.length > 0);
+
+                    $('.single-note-item').each(function() {
+                        var title = $(this).data('title').toLowerCase();
+                        var description = $(this).data('description').toLowerCase();
+                        if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                            $(this).show();
+                            hasResults = true;
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+
+                    // Tampilkan pesan "No results" hanya jika ada input dan tidak ada hasil
+                    $('#no-results').toggle(searchTerm.length > 0 && !hasResults);
+                });
+
+                // Event listener untuk ikon "X" untuk menghapus input
+                $('#clear-search').on('click', function() {
+                    $('#search-input').val('').trigger('keyup');
+                });
+
+                // Menampilkan semua ide saat halaman dimuat
+                $('.single-note-item').addClass('show');
+
+                // Inisialisasi Bootstrap Modal dengan konfigurasi yang benar
+                var modals = document.querySelectorAll('.modal');
+                modals.forEach(function(modal) {
+                    new bootstrap.Modal(modal, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                });
             });
         </script>
     @endpush
+    <div class="js-count-particles" style="display: none;"></div>
 </x-app-layout>

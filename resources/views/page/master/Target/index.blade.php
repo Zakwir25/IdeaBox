@@ -170,8 +170,8 @@
                                                     placeholder="Year" value="{{ $data->year }}">
                                                 <span class="validation-text text-danger"></span>
                                             </div>
-                                            
-                                            
+
+
                                         </div>
                                     </div>
                                 </div>

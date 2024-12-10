@@ -71,6 +71,11 @@ class Idea extends Model
         return $this->hasMany(IdeaApproval::class);
     }
 
+    public function teamMember()
+    {
+        return $this->hasMany(teamMember::class);
+    }
+
     protected static function booted()
     {
         static::saving(function ($idea) {

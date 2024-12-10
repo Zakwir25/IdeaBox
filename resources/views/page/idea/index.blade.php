@@ -4,52 +4,206 @@
     @endsection
 
     @push('css')
+        <style>
+            #particles-js {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+            }
+
+            .badge {
+                background: linear-gradient(45deg, #74c0fc, #4dabf7);
+                color: white;
+            }
+
+            .note-title {
+                transition: color 0.3s;
+            }
+
+            .note-title:hover {
+                color: #ff6b6b;
+            }
+
+            .side-stick {
+                transition: width 0.3s;
+            }
+
+            .side-stick:hover {
+                width: 10px;
+            }
+
+            .single-note-item {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .nav-link.active {
+                background: linear-gradient(45deg, #4dabf7, #74c0fc);
+                color: white;
+            }
+
+            .modal-image {
+                width: 100%;
+                height: auto;
+            }
+
+            /* Responsive styles */
+            @media (max-width: 768px) {
+                .single-note-item {
+                    width: 100%;
+                }
+
+                .card-body {
+                    padding: 1rem;
+                }
+
+                h1 {
+                    font-size: 1.5rem;
+                    margin-bottom: 1rem;
+                }
+
+                .nav-pills {
+                    flex-wrap: nowrap;
+                    overflow-x: auto;
+                    padding: 0.5rem !important;
+                }
+
+                .nav-link {
+                    padding: 0.5rem !important;
+                    font-size: 0.8rem !important;
+                }
+
+                .btn {
+                    padding: 0.5rem !important;
+                    font-size: 0.8rem !important;
+                }
+
+                .modal-dialog {
+                    margin: 0.5rem;
+                }
+
+                .shop-content {
+                    margin-top: 1rem;
+                }
+
+                .modal-image {
+                    max-height: 250px;
+                    object-fit: contain;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .col-md-3 {
+                    width: 100%;
+                }
+
+                .me-8 {
+                    margin-right: 1rem !important;
+                }
+
+                .additional-info {
+                    margin-left: 0 !important;
+                    margin-top: 1rem !important;
+                }
+
+                .user-info .row {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .user-info .col-md-3 {
+                    margin-bottom: 1rem;
+                }
+
+                .user-info img {
+                    margin: 0 auto;
+                }
+
+                .modal-dialog {
+                    margin: 0;
+                    max-width: 100%;
+                    height: 100%;
+                }
+
+                .modal-content {
+                    height: 100%;
+                    border-radius: 0;
+                }
+
+                .carousel-item img {
+                    max-height: 200px;
+                    width: 100%;
+                    object-fit: contain;
+                }
+            }
+
+            /* Tablet specific styles */
+            @media (min-width: 768px) and (max-width: 1024px) {
+                .col-md-3 {
+                    width: 50%;
+                }
+
+                .card-body {
+                    padding: 1.25rem;
+                }
+
+                .modal-dialog {
+                    max-width: 90%;
+                }
+
+                .carousel-item img {
+                    max-height: 300px;
+                    width: 100%;
+                    object-fit: contain;
+                }
+            }
+
+            @media (min-width: 1024px) and (max-width: 1500px) {
+                .col-md-3 {
+                    width: 33%;
+                }
+
+                .modal-dialog {
+                    max-width: 90%;
+                }
+            }
+           
+        </style>
     @endpush
+
+    <div id="particles-js" style="position: absolute; width: 100%; height: 100%;"></div>
 
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-2">
         <div class="card-body px-0">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex flex-column">
                     <h1 class="font-weight-medium mb-3 ml-3">Wall of Ideas</h1>
-                    <div class="widget-content searchable-container list">
+                    <!-- count particles -->
+                    <div class="count-particles">
+                        <span class="js-count-particles" style="display: none;">--</span>
+                    </div>
 
-                    <form method="GET" action="{{ route('ideas.index') }}" class="d-flex align-items-center">
-                        <input type="text" name="search" class="form-control" placeholder="Cari judul atau deskripsi..."
-                            value="{{ request('search') }}">
-                        @if (request('search'))
-                            <button type="button" class="btn btn-link text-decoration-none btn-lg"
-                                onclick="document.querySelector('input[name=search]').value=''; this.form.submit();">
-                                &times;
-                            </button>
-                        @endif
-                        </form>
+                    <div class="widget-content searchable-container list position-relative">
+                        <input type="text" id="search-input" class="form-control"
+                            placeholder="Cari judul atau deskripsi..." value="request('search')">
+                        <span id="clear-search" class="position-absolute"
+                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">&times;</span>
                     </div>
                 </div>
-                <img src="{{ asset('assets') }}/images/logos/Maskot CITA.png" alt="homepage" style="width: 100px">
+                <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+                    <img src="{{ asset('assets') }}/images/logos/Maskot CITA.png" alt="homepage"
+                        style="width: 100px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                </div>
             </div>
         </div>
-
-        <!-- Form Pencarian -->
-        {{-- <div class="d-flex justify-content-between align-items-center mb-3">
-            <form method="GET" action="{{ route('ideas.index') }}" class="d-flex align-items-center">
-                <input type="text" name="search" class="form-control " placeholder="Cari judul atau deskripsi..."
-                    value="{{ request('search') }}">
-                @if (request('search'))
-                    <button type="button" class="btn btn-link text-decoration-none btn-lg"
-                        onclick="document.querySelector('input[name=search]').value=''; this.form.submit();">
-                        &times;
-                    </button>
-                @endif
-            </form>
-            <img src="{{ asset('assets') }}/images/logos/Maskot CITA.png" alt="homepage" style="width: 100px">
-        </div> --}}
-
 
         <ul class="nav nav-pills p-3 mb-3 rounded align-items-center card flex-row">
             <li class="nav-item">
                 <a href="javascript:void(0)"
                     class="nav-link gap-6 note-link d-flex align-items-center justify-content-center active px-3 px-md-3 me-0 me-md-2 fs-11"
-                    id="all-category">
+                    id="note-">
                     <i class="ti ti-list fill-white"></i>
                     <span class="d-none d-md-block fw-medium">All</span>
                 </a>
@@ -66,85 +220,140 @@
             @endforeach
             <li class="nav-item ms-auto">
                 <a href="{{ route('ideas.create') }}"
-                    class="btn mb-1 bg-danger text-white px-4 fs-4 hover:bg-danger-dark d-flex align-items-center">
-                    <i class="ti ti-plus text-white me-1 fs-5"></i> <span class="d-none d-md-inline">Submit your Idea</span>
+                    class="btn mb-1 text-white px-4 fs-4 bg-danger d-flex align-items-center">
+                    <i class="ti ti-plus text-white me-1 fs-5"></i> <span class="d-none d-md-inline">Submit your
+                        Idea</span>
                 </a>
             </li>
         </ul>
 
         <div class="tab-content">
             <div id="note-full-container" class="note-has-grid row">
-                @foreach ($ideas as $idea)
-                    <div class="col-md-3 single-note-item all-category note-{{ $idea->category_id }}">
-                        <div class="card card-body">
-                            <span class="side-stick"
-                                style="background-color:
-                            @if ($idea->category_id == 1) var(--bs-primary)
-                            @elseif($idea->category_id == 2)
-                                var(--bs-danger)
-                            @elseif($idea->category_id == 3)
-                                var(--bs-warning)
-                            @elseif($idea->category_id == 4)
-                                var(--bs-success) @endif
-                        "></span>
-                            <h6 class="note-title text-truncate w-75 mb-0" data-noteheading="{{ $idea->title }}">
-                                {{ $idea->title }} </h6>
-                            <p class="note-date fs-2">{{ $idea->created_at->format('d M Y') }}</p>
-                            <div class="note-content">
-                                <p class="note-inner-content" data-notecontent="{{ $idea->description }}">
-                                    @if (strlen($idea->description) > 100)
-                                        {!! substr($idea->description, 0, 100) !!}... <a href="javascript:void(0)" class="read-more"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editIdeaModal{{ $idea->id }}">Read More</a>
-                                    @else
-                                        {!! $idea->description !!}
-                                    @endif
-                                </p>
+                @forelse ($ideas as $idea)
+                    <div class="col-md-3 single-note-item all-category note-{{ $idea->category_id }}"
+                        data-title="{{ $idea->title }}" data-description="{{ $idea->description }}">
+                        <div class="card card-body ">
+                            <div class="me-8 d-flex justify-content-start align-items-center">
+                                @if ($idea->user->avatar)
+                                    <img src="{{ asset('storage/uploads/user_avatars/' . $idea->user->avatar) }}"
+                                        alt="Avatar" class="rounded-circle" width="72" height="72">
+                                @else
+                                    <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="Avatar"
+                                        class="rounded-circle" width="72" height="72">
+                                @endif
+
+                                @if (in_array($idea->category_id, [1, 2, 3, 4]))
+                                    <div class="additional-info ms-3 mt-3 overflow-hidden">
+                                        <ul class="list-unstyled ">
+
+                                            <h5 class="note-title text-truncate w-100 mb-0 fw-semibold"
+                                                data-noteheading="{{ strtoupper($idea->title) }}">
+                                                {{ strtoupper($idea->title) }}
+                                            </h5>
+                                            @if ($idea->before)
+                                                <li class="text-truncate"><strong>Before:</strong>
+                                                    {{$idea->before }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->after)
+                                                <li class="text-truncate"><strong>After:</strong>
+                                                    {{$idea->after }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 1 && $idea->benefit)
+                                                <li class="text-truncate"><strong>Benefit:</strong>
+                                                    {{ $idea->benefit }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 2 && $idea->sumber_best_practice)
+                                                <li class="text-truncate"><strong>Sumber Best Practice:</strong>
+                                                    {{$idea->sumber_best_practice }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 3 && $idea->proses_improve)
+                                                <li ><strong>Proses yang diimprove:</strong>
+                                                    {{ strlen($idea->proses_improve) > 20 ? substr($idea->proses_improve, 0, 17) . '...' : $idea->proses_improve }}
+                                                </li>
+                                            @endif
+                                            @if ($idea->category_id == 4 && $idea->nama_ai)
+                                                <li><strong>Nama AI:</strong>
+                                                    {{ strlen($idea->nama_ai) > 20 ? substr($idea->nama_ai, 0, 17) . '...' : $idea->nama_ai }}
+                                                </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                @endif
                             </div>
-                            <div class="d-flex align-items-center">
-                                <a href="javascript:void(0)" class="link me-1 like-button"
-                                    data-idea-id="{{ $idea->id }}">
-                                    @if ($idea->isLikedByUser())
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="red"
-                                            class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
-                                        </svg>
-                                    @else
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-                                        </svg>
-                                    @endif
-                                </a>
-                                <span class="like-count">{{ $idea->likes_count }}</span>
-                                <!-- Menampilkan jumlah like -->
-                                <div class="ms-auto">
-                                    <a href="javascript:void(0)" class="link me-1" data-bs-toggle="modal"
-                                        data-bs-target="#editIdeaModal{{ $idea->id }}">
-                                        <i class="ti ti-zoom-in fs-4"></i>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span
+                                            class="badge {{ $idea->category_id == 1 ? 'text-bg-success' : ($idea->category_id == 2 ? 'text-bg-primary' : ($idea->category_id == 3 ? 'text-bg-warning' : ($idea->category_id == 4 ? 'text-bg-info' : 'text-bg-secondary'))) }} fs-2 fw-semibold">{{ $idea->category->name ?? 'Not Yet have category' }}</span>
+                                    </div>
+                                    <p class="note-date fs-2">{{ $idea->created_at->format('d M Y') }}</p>
+                                </div>
+                                <span class="side-stick"
+                                    style="background-color:
+                                @if ($idea->category_id == 1) var(--bs-primary)
+                                @elseif($idea->category_id == 2)
+                                    var(--bs-danger)
+                                @elseif($idea->category_id == 3)
+                                    var(--bs-warning)
+                                @elseif($idea->category_id == 4)
+                                    var(--bs-success) @endif
+                            "></span>
+
+                                <div class="d-flex align-items-center">
+                                    <a href="javascript:void(0)" class="link me-1 like-button"
+                                        data-idea-id="{{ $idea->id }}" onClick="likeButton(this)">
+                                        @if ($idea->isLikedByUser())
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="red"
+                                                class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path
+                                                    d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                                            </svg>
+                                        @else
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path
+                                                    d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                                            </svg>
+                                        @endif
                                     </a>
+                                    <span class="like-count">{{ $idea->likes_count }}</span>
+                                    <div class="ms-auto">
+                                        <a href="javascript:void(0)" class="link me-1" data-bs-toggle="modal"
+                                            data-bs-target="#editIdeaModal{{ $idea->id }}">
+                                            <i class="ti ti-zoom-in fs-4"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="col-12 text-center">
+                        <p class="fs-4">No Yet have an Idea Here</p>
+                    </div>
+                @endforelse
+            </div>
+            <div id="no-results" class="col-12 text-center" style="display: none;">
+                <p class="fs-4">No results found for your search</p>
             </div>
         </div>
 
-        <!-- Link Pagination -->
-        <div class="d-flex justify-content-center mt-4">
-            {{ $ideas->appends(request()->input())->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+        <div id="pagination" class="d-flex justify-content-center mt-4">
+            {{{ $ideas->links('vendor.pagination.bootstrap-4') }}}
         </div>
     </div>
 
-    <!-- Modal Edit Idea -->
+    <!-- Modal Idea -->
+    <div id="modals">
     @foreach ($ideas as $idea)
         <div class="modal fade" id="editIdeaModal{{ $idea->id }}" tabindex="-1" role="dialog"
             aria-labelledby="editIdeaModalTitle" aria-hidden="true">
@@ -168,13 +377,16 @@
                                                             <div
                                                                 class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                                                                 <img src="{{ asset('storage/' . $file->file) }}"
-                                                                    alt="Gambar Idea" class="img-fluid">
+                                                                    alt="Gambar Idea" class="img-fluid modal-image"
+                                                                    style="width: 300px; height: auto;">
                                                             </div>
                                                         @endforeach
                                                     @else
                                                         <div class="carousel-item active">
                                                             <img src="{{ asset('assets/images/gallery/no_image.jpg') }}"
-                                                                alt="Gambar Tidak Tersedia" class="img-fluid">
+                                                                alt="Gambar Tidak Tersedia"
+                                                                class="img-fluid modal-image"
+                                                                style="width: 300px; height: auto;">
                                                         </div>
                                                     @endif
                                                 </div>
@@ -194,11 +406,55 @@
                                         </div>
                                         <div class="col-lg-6">
                                             <div class="shop-content">
-                                                <h4>{{ $idea->title }}</h4>
-                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                <!-- User Information -->
+                                                <div class="user-info mt-3">
+                                                    <h6 class="mb-3 fs-4 fw-semibold ">User Information:</h6>
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            @if ($idea->user->avatar)
+                                                                <img src="{{ asset('storage/uploads/user_avatars/' . $idea->user->avatar) }}"
+                                                                    alt="Avatar" class="rounded-circle img-fluid"
+                                                                    style="width: 72px; height: 72px;">
+                                                            @else
+                                                                <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}"
+                                                                    alt="Avatar" class="rounded-circle img-fluid"
+                                                                    style="width: 72px; height: 72px;">
+                                                            @endif
+                                                        </div>
+                                                        <div class="col-md-9">
+                                                            <ul class="list-unstyled">
+                                                                <li><strong>Name:</strong> {{ $idea->user->name }}</li>
+                                                                <li><strong>Email:</strong> {{ $idea->user->email }}
+                                                                </li>
+                                                                <li><strong>Section:</strong>
+                                                                    {{ $idea->user->section->name ?? 'N/A' }}</li>
+                                                            </ul>
+                                                            @if($idea->teamMember->count() > 0)
+                                                                <ul class="list-unstyled">
+                                                                    <li><strong>Team Leader:</strong>
+                                                                        {{ $idea->teamMember->first()->leader->name ?? 'N/A' }}</li>
+                                                                    <li><strong>Team Members:</strong>
+                                                                        <ul>
+                                                                            @foreach($idea->teamMember as $member)
+                                                                                <li>{{ $member->member->name ?? 'N/A' }}</li>
+                                                                            @endforeach
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <h4 class="mb-0 fw-semibold mt-5">"{{ strtoupper($idea->title) }}"
+                                                </h4>
+                                                <div
+                                                    class="d-flex align-items-center gap-2 mb-2 justify-content-between">
                                                     <span
                                                         class="badge {{ $idea->category_id == 1 ? 'text-bg-success' : ($idea->category_id == 2 ? 'text-bg-primary' : ($idea->category_id == 3 ? 'text-bg-warning' : ($idea->category_id == 4 ? 'text-bg-info' : 'text-bg-secondary'))) }} fs-2 fw-semibold">{{ $idea->category->name ?? 'Not Yet have category' }}</span>
+                                                    <p class="note-date fs-2">{{ $idea->created_at->format('d M Y') }}
+                                                    </p>
                                                 </div>
+
 
                                                 @if ($idea->category_id == 1 || $idea->category_id == 2 || $idea->category_id == 3 || $idea->category_id == 4)
                                                     <div class="additional-info mt-3">
@@ -245,78 +501,80 @@
             </div>
         </div>
     @endforeach
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset('assets/js/particles/particles.js') }}"></script>
+    <script src="{{ asset('assets/js/particles/app.js') }}"></script>
+    <script src="{{ asset('assets/js/particles/lib/stats.js') }}"></script>
+
+    <script>
+        var ideas = @json($ideas);
+        console.log("Bekerja", ideas);
+        
+        var count_particles, stats, update;
+        stats = new Stats;
+        stats.setMode(0);
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild(stats.domElement);
+        count_particles = document.querySelector('.js-count-particles');
+        update = function() {
+            stats.begin();
+            stats.end();
+            if (window.pJSDom[0].pJS.particles && window.pJSDom[0].pJS.particles.array) {
+                count_particles.innerText = window.pJSDom[0].pJS.particles.array.length;
+            }
+            requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
+    </script>
+
     @push('scripts')
         <!-- Load jQuery -->
         <script>
             $(document).ready(function() {
+                particlesJS.load('particles-js', '{{ asset('assets/js/particles/particles.json') }}', function() {});
+
+                // set previous value to search bar
+                const urlParams = new URLSearchParams(window.location.search);
+                var searchBar = urlParams.get('search');
+                $('#search-input').val(searchBar);
+                if(searchBar){
+                    $('#clear-search').toggle();
+                }
+
+                // set previous category 
+                var categoryId = urlParams.get('category'); // Mendapatkan nilai parameter 'category'
+                document.querySelectorAll('.nav-link').forEach(function(t) {
+                            t.classList.remove('active');
+                });
+                document.getElementById('note-' + (categoryId ? categoryId : '')).classList.add('active');
+
+                // update like count
                 updateLikeCounts();
 
                 // Event listener for category tabs
                 document.querySelectorAll('.nav-link.note-link').forEach(function(tab) {
                     tab.addEventListener('click', function() {
                         console.log('Tab clicked:', this.id);
-                        // Remove active class from all tabs
+
                         document.querySelectorAll('.nav-link').forEach(function(t) {
                             t.classList.remove('active');
                         });
 
                         // Add active class to the clicked tab
                         this.classList.add('active');
-
                         // Get the category from the clicked tab's ID
                         var category = this.id.replace('note-', '');
 
-                        // Show/hide notes based on the selected category
-                        document.querySelectorAll('.single-note-item').forEach(function(note) {
-                            if (category === 'all-category' || note.classList.contains('note-' +
-                                    category)) {
-                                note.style.display = 'block';
-                            } else {
-                                note.style.display = 'none';
-                            }
-                        });
+                        // Get Ideas based on Category selected
+                        getIdeasAjax();
                     });
                 });
 
-                // Event listener for like button
-                $('.like-button').on('click', function() {
-                    var button = $(this);
-                    var ideaId = button.data('idea-id');
-                    var icon = button.find('svg');
-                    var likeCountElement = button.siblings('.like-count');
-
-                    $.ajax({
-                        url: '/ideas/' + ideaId + '/like', // Adjust the URL to your route
-                        method: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            // Update the heart icon and like count based on the response
-                            if (response.liked) {
-                                icon.replaceWith(`
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
-                </svg>
-                `);
-                            } else {
-                                icon.replaceWith(`
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-                </svg>
-                `);
-                            }
-                            likeCountElement.text(response.likes_count); // Update the like count
-                        },
-                        error: function(xhr) {
-                            console.error('Error liking the idea:', xhr.responseText);
-                        }
-                    });
-                });
+                
                 // Inisialisasi tooltip Bootstrap
                 $('[data-bs-toggle="tooltip"]').tooltip();
 
@@ -344,7 +602,328 @@
                 // Polling every 5 seconds to update like counts
                 setInterval(updateLikeCounts, 5000);
 
+                // Event listener for search input
+                $('#search-input').on('keyup', function() {
+                    getIdeasAjax();
+                });
+
+                // Event listener untuk ikon "X" untuk menghapus input
+                $('#clear-search').on('click', function() {
+                    $('#search-input').val('').trigger('keyup');
+                });
+
+                // Inisialisasi Bootstrap Modal dengan konfigurasi yang benar
+                var modals = document.querySelectorAll('.modal');
+                modals.forEach(function(modal) {
+                    new bootstrap.Modal(modal, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                });
             });
+
+            // Event listener for like button
+            function likeButton(button) {
+                    var ideaId = $(button).data('idea-id');
+                    var icon = $(button).find('svg');
+                    var likeCountElement = $(button).siblings('.like-count');
+
+                    $.ajax({
+                        url: '/ideas/' + ideaId + '/like', // Adjust the URL to your route
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            // Update the heart icon and like count based on the response
+                            if (response.liked) {
+                                icon.replaceWith(`
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                            </svg>
+                            `);
+                            } else {
+                                icon.replaceWith(`
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                            </svg>
+                            `);
+                            }
+                            likeCountElement.text(response.likes_count); // Update the like count
+                        },
+                        error: function(xhr) {
+                            console.error('Error liking the idea:', xhr.responseText);
+                        }
+                    });
+                }
+
+            function getIdeasAjax(){
+                var searchTerm = $('#search-input').val().toLowerCase();
+                var hasResults = false;
+                console.log("yang di search: ",searchTerm);
+                var searchCategory = $('.nav-link.active').attr('id').replace('note-', '');
+                console.log("active nav: ", searchCategory);
+
+                $.ajax({
+                url: '{{ route('ideas.search') }}', // Route untuk mencari ide
+                type: 'GET',
+                data: { 
+                    search: searchTerm,
+                    category: searchCategory
+                },
+                success: function(response) {
+                    // Update hasil pencarian (data ide)
+                    var ideaDiv = document.getElementById('note-full-container');
+                    var modalDiv = document.getElementById('modals');
+                    ideaDiv.innerHTML = "";
+                    modalDiv.innerHTML = "";
+                    console.log("ide nya: " ,response);
+
+                    const assetBaseUrl = "{{ asset('') }}";
+
+                    response.data.data.forEach(function(idea) {
+                        
+                        const avatar = idea.user.avatar ? `${assetBaseUrl}storage/uploads/user_avatars/${idea.user.avatar}` :
+                        `${assetBaseUrl}assets/images/logos/sinarmeadow.png`;
+
+                        console.log("Item repeat array: ", idea);
+                        // Assuming `idea` is an object containing the data for the idea
+                        ideaDiv.innerHTML += `
+                            <div class="col-md-3 single-note-item all-category note-${idea.category_id}"
+                                data-title="${idea.title}" data-description="${idea.description}">
+                                <div class="card card-body">
+                                    <div class="me-8 d-flex justify-content-start align-items-center">
+                                        <img src="${avatar}"
+                                            alt="Avatar" class="rounded-circle" width="72" height="72">
+                                        
+                                        ${[1, 2, 3, 4].includes(idea.category_id) ? `
+                                            <div class="additional-info ms-3 mt-3 overflow-hidden">
+                                                <ul class="list-unstyled">
+                                                    <h5 class="note-title text-truncate w-100 mb-0 fw-semibold"
+                                                        data-noteheading="${idea.title.toUpperCase()}">
+                                                        ${idea.title.toUpperCase()}
+                                                    </h5>
+                                                    ${idea.before ? `<li class="text-truncate"><strong>Before:</strong> ${idea.before}</li>` : ''}
+                                                    ${idea.after ? `<li class="text-truncate"><strong>After:</strong> ${idea.after}</li>` : ''}
+                                                    ${idea.category_id == 1 && idea.benefit ? `<li class="text-truncate"><strong>Benefit:</strong> ${idea.benefit}</li>` : ''}
+                                                    ${idea.category_id == 2 && idea.sumber_best_practice ? `<li class="text-truncate"><strong>Sumber Best Practice:</strong> ${idea.sumber_best_practice}</li>` : ''}
+                                                    ${idea.category_id == 3 && idea.proses_improve ? `<li><strong>Proses yang diimprove:</strong> ${idea.proses_improve.length > 20 ? idea.proses_improve.substring(0, 17) + '...' : idea.proses_improve}</li>` : ''}
+                                                    ${idea.category_id == 4 && idea.nama_ai ? `<li><strong>Nama AI:</strong> ${idea.nama_ai.length > 20 ? idea.nama_ai.substring(0, 17) + '...' : idea.nama_ai}</li>` : ''}
+                                                </ul>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge ${(() => {
+                                                    switch (idea.category_id) {
+                                                        case 1: return 'text-bg-success';
+                                                        case 2: return 'text-bg-primary';
+                                                        case 3: return 'text-bg-warning';
+                                                        case 4: return 'text-bg-info';
+                                                        default: return 'text-bg-secondary';
+                                                    }
+                                                })()} fs-2 fw-semibold">
+                                                    ${idea.category.name || 'Not Yet have category'}
+                                                </span>
+                                            </div>
+                                            <p class="note-date fs-2">${new Date(idea.created_at).toLocaleDateString('en-GB')}</p>
+                                        </div>
+
+                                        <span class="side-stick" style="background-color: ${(() => {
+                                            switch (idea.category_id) {
+                                                case 1: return 'var(--bs-primary)';
+                                                case 2: return 'var(--bs-danger)';
+                                                case 3: return 'var(--bs-warning)';
+                                                case 4: return 'var(--bs-success)';
+                                                default: return 'var(--bs-secondary)';
+                                            }
+                                        })()}"></span>
+
+                                        <div class="d-flex align-items-center">
+                                            <a href="javascript:void(0)" class="link me-1 like-button" data-idea-id="${idea.id}" onClick="likeButton(this)">
+                                                ${idea.isLikedByUser ? `
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red"
+                                                        class="icon icon-tabler icons-tabler-filled icon-tabler-heart">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                                                    </svg>
+                                                ` : `
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-heart">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                                                    </svg>
+                                                `}
+                                            </a>
+                                            <span class="like-count">${idea.likes_count || ''}</span>
+                                            <div class="ms-auto">
+                                                <a href="javascript:void(0)" class="link me-1" data-bs-toggle="modal" data-bs-target="#editIdeaModal${idea.id}">
+                                                    <i class="ti ti-zoom-in fs-4"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        modalDiv.innerHTML += `
+                            <div class="modal fade" id="editIdeaModal${idea.id}" tabindex="-1" role="dialog"
+                                aria-labelledby="editIdeaModalTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header modal-colored-header bg-primary text-white">
+                                            <h5 class="modal-title text-white">Detail Idea</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="shop-detail">
+                                                <div class="card">
+                                                    <div class="card-body p-4">
+                                                        <div class="row">
+                                                            <div class="col-lg-6">
+                                                                <div id="image-slider" class="carousel slide" data-bs-ride="carousel">
+                                                                    <div class="carousel-inner">
+                                                                        ${idea.ideaFile ?
+                                                                            idea.ideaFile.map((file, index) => `
+                                                                                <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                                                                                    <img src="${file.file}" alt="Gambar Idea" class="img-fluid modal-image"
+                                                                                        style="width: 300px; height: auto;">
+                                                                                </div>
+                                                                            `).join('') :
+                                                                            `<div class="carousel-item active">
+                                                                                <img src="assets/images/gallery/no_image.jpg" alt="Gambar Tidak Tersedia"
+                                                                                    class="img-fluid modal-image" style="width: 300px; height: auto;">
+                                                                            </div>`
+                                                                        }
+                                                                    </div>
+                                                                    <button class="carousel-control-prev" type="button"
+                                                                        data-bs-target="#image-slider" data-bs-slide="prev">
+                                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                                        <span class="visually-hidden">Previous</span>
+                                                                    </button>
+                                                                    <button class="carousel-control-next" type="button"
+                                                                        data-bs-target="#image-slider" data-bs-slide="next">
+                                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                                        <span class="visually-hidden">Next</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="shop-content">
+                                                                    <!-- User Information -->
+                                                                    <div class="user-info mt-3">
+                                                                        <h6 class="mb-3 fs-4 fw-semibold">User Information:</h6>
+                                                                        <div class="row">
+                                                                            <div class="col-md-3">
+                                                                                <img src="${idea.user.avatar ? 'storage/uploads/user_avatars/' + idea.user.avatar : 'assets/images/logos/sinarmeadow.png'}"
+                                                                                    alt="Avatar" class="rounded-circle img-fluid"
+                                                                                    style="width: 72px; height: 72px;">
+                                                                            </div>
+                                                                            <div class="col-md-9">
+                                                                                <ul class="list-unstyled">
+                                                                                    <li><strong>Name:</strong> ${idea.user.name}</li>
+                                                                                    <li><strong>Email:</strong> ${idea.user.email}</li>
+                                                                                    <li><strong>Section:</strong> ${idea.user.section?.name || 'N/A'}</li>
+                                                                                </ul>
+                                                                                ${idea.teamMember ?
+                                                                                    `<ul class="list-unstyled">
+                                                                                        <li><strong>Team Leader:</strong> ${idea.teamMember[0].leader?.name || 'N/A'}</li>
+                                                                                        <li><strong>Team Members:</strong>
+                                                                                            <ul>
+                                                                                                ${idea.teamMember.map(member => `<li>${member.member?.name || 'N/A'}</li>`).join('')}
+                                                                                            </ul>
+                                                                                        </li>
+                                                                                    </ul>` : ''
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <h4 class="mb-0 fw-semibold mt-5">"${idea.title.toUpperCase()}"</h4>
+                                                                    <div class="d-flex align-items-center gap-2 mb-2 justify-content-between">
+                                                                        <span class="badge 
+                                                                        ${(() => {
+                                                                            switch (idea.category_id) {
+                                                                                case 1: return 'text-bg-success';
+                                                                                case 2: return 'text-bg-primary';
+                                                                                case 3: return 'text-bg-warning';
+                                                                                case 4: return 'text-bg-info';
+                                                                                default: return 'text-bg-secondary';
+                                                                            }
+                                                                        })()}
+                                                                        fs-2 fw-semibold">${idea.category?.name || 'Not Yet have category'}</span>
+                                                                        <p class="note-date fs-2">${new Date(idea.created_at).toLocaleDateString()}</p>
+                                                                    </div>
+
+                                                                    ${[1, 2, 3, 4].includes(idea.category_id) ?
+                                                                        `<div class="additional-info mt-3">
+                                                                            <h6 class="mb-0 fs-4 fw-semibold">Idea Information:</h6>
+                                                                            <ul class="list-unstyled">
+                                                                                ${idea.before ? `<li><strong>Before:</strong> ${idea.before}</li>` : ''}
+                                                                                ${idea.after ? `<li><strong>After:</strong> ${idea.after}</li>` : ''}
+                                                                                ${idea.category_id === 1 && idea.benefit ? `<li><strong>Benefit:</strong> ${idea.benefit}</li>` : ''}
+                                                                                ${idea.category_id === 2 && idea.sumber_best_practice ? `<li><strong>Sumber Best Practice:</strong> ${idea.sumber_best_practice}</li>` : ''}
+                                                                                ${idea.category_id === 3 && idea.proses_improve ? `<li><strong>Proses yang diimprove:</strong> ${idea.proses_improve}</li>` : ''}
+                                                                                ${idea.category_id === 4 && idea.nama_ai ? `<li><strong>Nama AI:</strong> ${idea.nama_ai}</li>` : ''}
+                                                                            </ul>
+                                                                        </div>` : ''
+                                                                    }
+                                                                    <div class="description-box">
+                                                                        <h6 class="mb-0 fs-4 fw-semibold">Description:</h6>
+                                                                        <p class="mb-0 fs-4 text-justify">${idea.description}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn bg-danger-subtle text-danger" data-bs-dismiss="modal"> Close </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    
+
+                    // // Update pagination
+                    $('#pagination').html(response.pagination);
+                    
+                    // // Tampilkan pesan "No results" jika tidak ada hasil
+                    $('#no-results').toggle((response.data.data.length === 0));
+                    
+                    if((searchTerm.length > 0 && (response.data.data.length === 0))){
+                        $('#no-results').toggle
+                    }
+
+                }
+                });
+
+                // Tampilkan atau sembunyikan ikon "X" berdasarkan input
+                $('#clear-search').toggle(searchTerm.length > 0);
+
+                var modals = document.querySelectorAll('.modal');
+                modals.forEach(function(modal) {
+                    new bootstrap.Modal(modal, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                });
+            }
         </script>
     @endpush
+    <div class="js-count-particles" style="display: none;"></div>
 </x-app-layout>

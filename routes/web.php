@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\IdeaApprovalController;
 use App\Http\Controllers\IdeaController;
@@ -12,9 +13,11 @@ use App\Http\Controllers\Master\PositionController;
 use App\Http\Controllers\Master\RoleController;
 use App\Http\Controllers\Master\SectionController;
 use App\Http\Controllers\Master\UserController;
+use App\Http\Controllers\Master\IdeaCountsController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,36 +30,44 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
+
+Route::get('/create-symlink', function () {
+    $target = storage_path('app/public'); // path ke folder storage/app/public
+    $link = public_path('storage'); // path ke folder public/storage
+
+    // Cek apakah symlink sudah ada
+    if (!File::exists($link)) {
+        // Buat symlink
+        symlink($target, $link);
+        return 'Symlink has been created.';
+    }
+
+    return 'Symlink already exists.';
 });
 
+Route::get('/chartfilter', [Dashboard::class, 'getBarChart']);
 
+Route::get('ideas?', [IdeaController::class, 'index'])->name('ideas.search');
+Route::get('idea_counts/department', [IdeaCountsController::class, 'getIdeaByDepartment'])->name('idea_count.search');
+Route::get('approvedIdeas', [IdeaController::class, 'approvedIdeas'])->name('ideas.approved');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
-    
-    // //route filter month
-    // Route::get('/leaderboardnovaa', [Dashboard::class, 'getleaderboardNoVAA']);
-    // Route::get('/leaderboardbestpractice', [Dashboard::class, 'getleaderboardBestpractice']);
-    // Route::get('/leaderboardimprovement', [Dashboard::class, 'getleaderboardImprovment']);
-    //  Route::get('/leaderboardAI', [Dashboard::class, 'getleaderboardArtificialIntelegents']);
 
-    
     Route::get('/filter', [Dashboard::class, 'getLeaderboardData']);
-    
-    Route::get('/chartfilter', [Dashboard::class, 'getBarChart']);
+
     Route::get('/filterTarget', [Dashboard::class, 'getTargetData']);
     Route::get('/targets', [Dashboard::class, 'targetIndex'])->name('targets.index');
     Route::delete('/targets/{id}/delete', [Dashboard::class, 'targetDestroy'])->name('targets.destroy');
     Route::PUT('/targets/{id}/update', [Dashboard::class, 'targetUpdate'])->name('targets.update');
     Route::POST('/targets/store', [Dashboard::class, 'targetStore'])->name('targets.store');
-    
-    
-    
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [UserController::class, 'updateProfile'])->name('profile.updates');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
 
     Route::resource('users', UserController::class);
     Route::resource('categories', CategoryController::class);
@@ -66,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('ideas', IdeaController::class);
     Route::resource('sections', SectionController::class);
     Route::resource('approvers', ApproverController::class);
+    Route::resource('idea_counts', IdeaCountsController::class);
 
     Route::post('/ideas/{ideaId}/approve', [IdeaController::class, 'approveIdea'])->name('ideas.approve');
     Route::post('/ideas/{ideaId}/reject', [IdeaController::class, 'rejectIdea'])->name('ideas.reject');
@@ -107,7 +119,7 @@ Route::group(['middleware' => ['role:super-admin|admin']], function() {
 
     Route::resource('users', UserController::class);
     Route::get('users/{userId}/delete', [UserController::class, 'destroy']);
-    
+
 });
 
 Route::post('/ideas/upload', [IdeaController::class, 'upload'])->name('ideas.upload');

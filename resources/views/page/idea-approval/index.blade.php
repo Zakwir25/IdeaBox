@@ -28,7 +28,7 @@
             </button>
             <form class="position-relative w-100">
                 <input type="text" class="form-control search-chat py-2 ps-5" id="text-srh"
-                    placeholder="Search Contact">
+                    placeholder="Search Idea">
                 <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
             </form>
         </div>
@@ -70,8 +70,11 @@
                                     <li class="idea-item" data-category-id="{{ $idea->category_id }}">
                                         <div class="chat-user bg-light-subtle px-4 py-3 d-flex align-items-center bg-hover-light-black mb-3"
                                             data-user-id="{{ $idea->id }}">
-                                            <img src="{{ asset('assets/images/profile/user-3.jpg') }}" alt="user-4"
-                                                width="40" height="40" class="rounded-circle me-3">
+                                            @if ($idea->user->avatar)
+                                                <img src="{{ asset('storage/uploads/user_avatars/' . $idea->user->avatar) }}" alt="Avatar" class="rounded-circle me-3" width="40" height="40">
+                                            @else
+                                                <img src="{{ asset('assets/images/logos/sinarmeadow.png') }}" alt="Avatar" class="rounded-circle me-3" width="40" height="40">
+                                            @endif
                                             <div class="w-75">
                                                 <h6 class="mb-1 fw-semibold chat-title"
                                                     data-username="{{ $idea->user->name }}">{{ $idea->user->name }}</h6>
@@ -148,7 +151,6 @@
                 if (data.idea_file.length > 0) {
                     filesHtml = data.idea_file.map((file, index) => {
                         const fileUrl = `${assetBaseUrl}storage/${file.file}`;
-                        console.log(fileUrl);
                         return `
                             <div class="carousel-item ${index === 0 ? 'active' : ''}">
                                 <img src="${fileUrl}" alt="${file.file}" class="img-fluid">
@@ -159,8 +161,8 @@
                     filesHtml = '<p class="mb-0">Tidak ada file tersedia.</p>';
                 }
 
-                const avatar = data.user.avatar ? `${assetBaseUrl}storage/app/public/profile/${data.user.avatar}` :
-                    `${assetBaseUrl}assets/images/profile/user-8.jpg`;
+                const avatar = data.user.avatar ? `${assetBaseUrl}storage/uploads/user_avatars/${data.user.avatar}` :
+                    `${assetBaseUrl}assets/images/logos/sinarmeadow.png`;
                 const sectionName = data.user.section ? data.user.section.name : 'Section not available';
                 const positionName = data.user.position ? data.user.position.name : 'Position not available';
                 const departmentName = data.user.department ? data.user.department.name :
@@ -306,7 +308,12 @@
                             note: 'Approved via UI'
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         Swal.fire({
                             title: 'Success!',
@@ -314,7 +321,7 @@
                             icon: 'success',
                             confirmButtonText: 'OK'
                         }).then(() => {
-                            window.location.href = 'http://cita.sinarmeadow.com/idea-approvals'; // Redirect to a specific page
+                            window.location.href = '{{ route('ideas.approvals') }}'; // Redirect to a specific page
                         });
                     })
                     .catch(error => {
@@ -341,36 +348,58 @@
             confirmButtonText: 'Yes, reject it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/ideas/${ideaId}/reject`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            note: 'Rejected via UI'
+                Swal.fire({ // Jika reject tampilkan swal untuk textarea
+                    title: 'Rejection Note',
+                    input: 'textarea',
+                    inputPlaceholder: 'Enter your note here...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Reject',
+                    cancelButtonText: 'Cancel',
+                    inputValidator: (value) => {
+                        if (!value || value.length < 10) {
+                            return 'You need to write at least 10 characters!';
+                        }
+                    }
+                }).then((noteResult) => {
+                    if (noteResult.isConfirmed) { // Jika ada notenya
+                        const note = noteResult.value; // Ambil note value
+                        fetch(`/ideas/${ideaId}/reject`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                note: note, // 
+                            })
                         })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Idea rejected successfully',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = 'http://cita.sinarmeadow.com/idea-approvals'; // Redirect to a specific page
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Idea rejected successfully',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                window.location.href = '{{ route('ideas.approvals') }}'; // Redirect to a specific page
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error rejecting idea:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'There was an error rejecting the idea',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
                         });
-                    })
-                    .catch(error => {
-                        console.error('Error rejecting idea:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'There was an error rejecting the idea',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    });
+                    }
+                });
             }
         });
     }
@@ -386,4 +415,70 @@
         });
     }
 </script>
+
+<style>
+    .carousel-item img {
+        width: 100%; /* Atur lebar gambar sesuai dengan container */
+        height: 400px; /* Atur tinggi gambar secara konsisten */
+        object-fit: contain; /* Memastikan gambar ditampilkan sepenuhnya tanpa terpotong */
+    }
+</style>
+
+<!-- Tambahkan offcanvas element -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="chat-sidebar" aria-labelledby="chat-sidebar-label">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="chat-sidebar-label">Categories</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="list-group">
+            <li class="list-group-item border-0 p-0">
+                <a class="d-flex align-items-center gap-6 list-group-item-action text-dark px-3 py-8 mb-1 rounded-1"
+                    href="javascript:void(0)" onclick="filterIdeas('all')">
+                    <i class="ti ti-file-text fs-5"></i>All
+                </a>
+            </li>
+            <li class="border-bottom my-3"></li>
+            <li class="fw-semibold text-dark text-uppercase my-2 px-3 fs-2">Pending By Categories</li>
+            @foreach ($categories as $category)
+                <li class="list-group-item border-0 p-0">
+                    <a class="d-flex align-items-center gap-6 list-group-item-action text-dark px-3 py-8 mb-1 rounded-1"
+                        href="javascript:void(0)" onclick="filterIdeas('{{ $category->id }}')">
+                        <i class="ti ti-bookmark fs-5 text-primary"></i>{{ $category->name }}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi Offcanvas
+    var offcanvasElement = document.getElementById('chat-sidebar');
+    if (offcanvasElement) {
+        var bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement, {
+            backdrop: true,
+            keyboard: true,
+            scroll: false
+        });
+    }
+
+    // Event listener untuk tombol toggle
+    var offcanvasToggle = document.querySelector('[data-bs-toggle="offcanvas"]');
+    if (offcanvasToggle) {
+        offcanvasToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            bsOffcanvas.show();
+        });
+    }
+
+    // Existing code...
+});
+</script>
+@endpush
+
+<!-- Pastikan Bootstrap bundle JS dimuat dengan benar -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 

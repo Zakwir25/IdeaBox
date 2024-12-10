@@ -3,27 +3,27 @@
         <h2 class="h4">
             {{ __('Profile Information') }}
         </h2>
-        
+
         <p class="text-muted">
             {{ __("Update your account's profile information and email address.") }}
         </p>
     </header>
 
-    
-        </div>
-         <!-- Preview Image -->
-         <div class="mt-2">
-            <img id="image_preview" src="{{ asset($user->profile_image) }}" alt="Profile Image Preview" class="img-fluid" style="max-width: 200px; display: {{ $user->profile_image ? 'block' : 'none' }};">
-        </div>
-    </div>
-
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-4" enctype="multipart/form-data">
+    <form method="post" action="{{ route('profile.updates') }}" class="mt-4" enctype="multipart/form-data">
         @csrf
         @method('patch')
+
+        {{-- <div>
+            <label for="nik" class="form-label">{{ __('Nik') }}</label>
+            <input id="nik" name="nik" type="text" class="form-control" :value="old('nik', $user->nik)" required autofocus autocomplete="nik">
+            @error('nik')
+                <div class="text-danger mt-1">{{ $message }}</div>
+            @enderror
+        </div> --}}
 
         <div class="mb-3">
             <label for="name" class="form-label">{{ __('Name') }}</label>
@@ -40,7 +40,7 @@
                 <div class="text-danger mt-1">{{ $message }}</div>
             @enderror
 
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
+            {{-- @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div class="mt-2">
                     <p class="text-muted">
                         {{ __('Your email address is unverified.') }}
@@ -56,9 +56,8 @@
                         </p>
                     @endif
                 </div>
-            @endif
+            @endif --}}
         </div>
-
         <div class="mb-3">
             <label for="avatar" class="form-label" style="display: block;">{{ __('Avatar') }}</label>
             @if ($user->avatar)
@@ -108,6 +107,4 @@
             @endif
         </div>
     </form>
-    
 </section>
-

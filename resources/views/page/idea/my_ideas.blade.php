@@ -39,7 +39,18 @@
                     </div>
                   </td>
                   <td>
-                    <p class="mb-0 fw-normal fs-4">{{ $idea->status }}</p>
+                    <p class="mb-0 fw-normal fs-4">
+                      <span class="{{ strtolower($idea->status) == 'published' ? 'text-success' : (strtolower($idea->status) == 'rejected' ? 'text-danger' : 'text-warning') }}">
+                        {{ $idea->status }}
+                      </span>
+                      @if(strtolower($idea->status) == 'rejected' && $idea->note)
+                        <a href="javascript:void(0)" class="text-primary edit" data-bs-toggle="modal"
+                        data-bs-target="#ideaModal{{ $idea->id }}">
+                          <i class="ti ti-eye fs-5"></i>
+                        </a>
+                      @endif
+                    </p>
+                    
                   </td>
                   <td>
                     <div class="d-flex align-items-center">
@@ -78,4 +89,36 @@
           </div>
         </div>
       </div>
+
+    <!-- Modal untuk note -->
+    <div id="modals">
+    @foreach ($ideasWithLikes as $idea)
+      @if($idea->note)
+        <div class="modal fade" id="ideaModal{{ $idea->id }}" tabindex="-1" role="dialog"
+            aria-labelledby="ideaModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header modal-colored-header bg-primary text-white">
+                        <h5 class="modal-title text-white">Note Idea</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="shop-detail">
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <p>{{$idea->note}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn bg-danger-subtle text-danger" data-bs-dismiss="modal"> Close </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      @endif
+    @endforeach
+    </div>
 </x-app-layout>
